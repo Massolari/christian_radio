@@ -12,6 +12,8 @@ pub type Icon {
   MusicOff
   Pause
   PlayArrow
+  VolumeOff
+  VolumeUp
   SyncProblem
 }
 
@@ -35,6 +37,8 @@ fn to_string(icon: Icon) -> String {
     MusicOff -> "music_off"
     Pause -> "pause"
     PlayArrow -> "play_arrow"
+    VolumeOff -> "volume_off"
+    VolumeUp -> "volume_up"
     SyncProblem -> "sync_problem"
   }
 }

@@ -1,4 +1,5 @@
 import gleam/dynamic
+import gleam/io
 import gleam/json
 import gleam/list
 import gleam/option.{type Option, None, Some}
@@ -6,13 +7,14 @@ import gleam/result
 import icon
 import lustre
 import lustre/attribute.{class, src, style}
-import lustre/effect
+import lustre/effect.{type Effect}
 import lustre/element.{type Element, text}
 import lustre/element/html.{button, div, img, li, nav, section, span, ul}
 import lustre/event
 import lustre_http as http
 import lustre_websocket
 import player
+import plinth/browser/window
 import plinth/javascript/storage
 import remote_data as rd
 import shared/song.{type Song, Song}
@@ -30,6 +32,7 @@ type Model {
     song: rd.RemoteData(Song, http.HttpError),
     history: List(Song),
     favorites: List(Song),
+    is_mobile: Bool,
   )
 }
 
@@ -38,7 +41,11 @@ type Tab {
   Favorites
 }
 
-fn init(favorites: List(Song)) -> #(Model, effect.Effect(Msg)) {
+type Init {
+  Init(favorites: List(Song), is_mobile: Bool)
+}
+
+fn init(init: Init) -> #(Model, effect.Effect(Msg)) {
   #(
     Model(
       station: None,
@@ -47,15 +54,17 @@ fn init(favorites: List(Song)) -> #(Model, effect.Effect(Msg)) {
       song: rd.NotAsked,
       websocket: None,
       history: [],
-      favorites:,
+      favorites: init.favorites,
+      is_mobile: init.is_mobile,
     ),
-    lustre_websocket.init("/ws", WebSocketEvent),
+    effect.batch([lustre_websocket.init("/ws", WebSocketEvent), watch_resize()]),
   )
 }
 
 // Update
 
 type Msg {
+  WindowResized(Bool)
   WebSocketEvent(lustre_websocket.WebSocketEvent)
   SelectedStation(station.StationName)
   ClickedTab(tab: Tab)
@@ -65,6 +74,11 @@ type Msg {
 
 fn update(model: Model, msg: Msg) -> #(Model, effect.Effect(Msg)) {
   case msg {
+    WindowResized(is_mobile) -> {
+      io.debug(is_mobile)
+      #(Model(..model, is_mobile:), effect.none())
+    }
+
     WebSocketEvent(lustre_websocket.OnOpen(ws)) -> #(
       Model(..model, websocket: Some(ws)),
       effect.none(),
@@ -162,26 +176,82 @@ fn handle_websocket_message(
 
 fn view(model: Model) -> Element(Msg) {
   html.main([class("bg-main-brand flex flex-col h-screen")], [
-    div([class("flex flex-col gap-8 pt-6 overflow-hidden flex-grow")], [
-      view_stations(model.station),
-      view_tabs(model),
-    ]),
+    case model.is_mobile {
+      True -> view_mobile(model)
+      False -> view_desktop(model)
+    },
     player.view(
       player: model.player,
       current_song: model.song,
       station: model.station,
       favorites: model.favorites,
+      is_mobile: model.is_mobile,
     )
       |> element.map(PlayerMsg),
   ])
 }
 
+fn view_mobile(model: Model) -> Element(Msg) {
+  div([class("flex flex-col gap-8 pt-6 overflow-hidden flex-grow")], [
+    view_stations(model.station),
+    view_tabs(model),
+  ])
+}
+
+fn view_desktop(model: Model) -> Element(Msg) {
+  div(
+    [
+      class(
+        "grid grid-cols-[1fr_2fr_1fr] gap-5 pt-3 pb-2 px-2 overflow-y-auto flex-grow",
+      ),
+    ],
+    [
+      view_desktop_history(model.history, model.favorites),
+      view_stations(model.station),
+      view_desktop_favorites(model.favorites),
+    ],
+  )
+}
+
+fn view_desktop_history(
+  songs: List(Song),
+  favorites: List(Song),
+) -> Element(Msg) {
+  div(
+    [
+      class(
+        "flex flex-col bg-dark-accent rounded-lg text-light-shades overflow-y-auto",
+      ),
+    ],
+    [
+      span([class("text-xl text-center p-2")], [text("Histórico")]),
+      view_history(songs, favorites),
+    ],
+  )
+}
+
+fn view_desktop_favorites(favorites: List(Song)) -> Element(Msg) {
+  div(
+    [
+      class(
+        "flex flex-col gap-6 bg-dark-accent rounded-lg text-light-shades overflow-y-auto",
+      ),
+    ],
+    [
+      span([class("text-xl text-center p-2")], [text("Favoritas")]),
+      view_favorites(favorites),
+    ],
+  )
+}
+
 fn view_stations(current_station: Option(station.StationName)) -> Element(Msg) {
-  section([class("pl-3 flex flex-col gap-2")], [
-    span([class("text-light-shades text-3xl")], [text("Estações")]),
+  section([class("pl-3 flex flex-col gap-2 md:gap-3")], [
+    span([class("text-light-shades text-3xl md:text-center")], [
+      text("Estações"),
+    ]),
     ul(
       [
-        class("flex gap-3 overflow-scroll pr-3"),
+        class("flex gap-3 overflow-scroll md:flex-wrap pr-3"),
         style([#("scrollbar-width", "none")]),
       ],
       list.map(station.list, view_station(current_station, _)),
@@ -196,11 +266,15 @@ fn view_station(
   let is_selected = current_station == Some(station.name)
 
   let selected_classes = case is_selected {
-    True -> "opacity-60"
+    True -> "opacity-70 scale-95"
     False -> ""
   }
 
-  let card_classes = class("w-36 h-36 rounded-lg " <> selected_classes)
+  let card_classes =
+    class(
+      "w-36 h-36 md:w-48 md:h-48 rounded-lg hover:scale-95 transition-all duration-300 cursor-pointer "
+      <> selected_classes,
+    )
 
   li([class("relative"), event.on_click(SelectedStation(station.name))], [
     case is_selected {
@@ -400,6 +474,23 @@ fn toggle_favorite(song: Song, favorites: List(Song)) -> List(Song) {
   new_favorites
 }
 
+fn watch_resize() -> Effect(Msg) {
+  use dispatch <- effect.from
+  // When the window is resized, we need to update the layout
+  window.add_event_listener("resize", fn(_) {
+    window.self()
+    |> window.inner_width
+    |> is_mobile
+    |> WindowResized
+    |> dispatch
+    Nil
+  })
+}
+
+fn is_mobile(size: Int) -> Bool {
+  size < 768
+}
+
 // fn get_song(station: station.StationName) -> Effect(Msg) {
 //   lustre_http.get(
 //     location_origin() <> "/api/station/" <> station.endpoint(station),
@@ -413,6 +504,12 @@ fn toggle_favorite(song: Song, favorites: List(Song)) -> List(Song) {
 // Main
 
 pub fn main() {
+  let this_window = window.self()
+  let this_is_mobile =
+    this_window
+    |> window.inner_width
+    |> is_mobile
+
   let local_storage = storage.local()
   let favorites =
     local_storage
@@ -426,6 +523,8 @@ pub fn main() {
 
   let app = lustre.application(init, update, view)
 
-  let assert Ok(_) = lustre.start(app, "#app", favorites)
+  let assert Ok(_) =
+    lustre.start(app, "#app", Init(favorites:, is_mobile: this_is_mobile))
+
   Nil
 }

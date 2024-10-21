@@ -213,35 +213,26 @@ fn view_desktop(model: Model) -> Element(Msg) {
   )
 }
 
-fn view_desktop_history(
-  songs: List(Song),
-  favorites: List(Song),
-) -> Element(Msg) {
+fn view_desktop_section(title: String, content: Element(Msg)) -> Element(Msg) {
   div(
     [
       class(
         "flex flex-col bg-dark-accent rounded-lg text-light-shades overflow-y-auto",
       ),
     ],
-    [
-      span([class("text-xl text-center p-2")], [text("Histórico")]),
-      view_history(songs, favorites),
-    ],
+    [span([class("text-xl text-center p-2")], [text(title)]), content],
   )
 }
 
+fn view_desktop_history(
+  songs: List(Song),
+  favorites: List(Song),
+) -> Element(Msg) {
+  view_desktop_section("Histórico", view_history(songs, favorites))
+}
+
 fn view_desktop_favorites(favorites: List(Song)) -> Element(Msg) {
-  div(
-    [
-      class(
-        "flex flex-col gap-6 bg-dark-accent rounded-lg text-light-shades overflow-y-auto",
-      ),
-    ],
-    [
-      span([class("text-xl text-center p-2")], [text("Favoritas")]),
-      view_favorites(favorites),
-    ],
-  )
+  view_desktop_section("Favoritas", view_favorites(favorites))
 }
 
 fn view_stations(current_station: Option(station.StationName)) -> Element(Msg) {
@@ -272,7 +263,7 @@ fn view_station(
 
   let card_classes =
     class(
-      "w-36 h-36 md:w-48 md:h-48 rounded-lg hover:scale-95 transition-all duration-300 cursor-pointer "
+      "w-36 h-36 md:w-48 md:h-48 rounded-lg active:scale-90 active:duration-100 hover:opacity-80 hover:duration-200 transition-all cursor-pointer "
       <> selected_classes,
     )
 
@@ -363,16 +354,12 @@ fn view_song_list_item(content: Element(Msg)) -> Element(Msg) {
 }
 
 fn view_history_song(song: Song, favorites: List(Song)) -> Element(Msg) {
-  let song_icon = case list.find(favorites, fn(s) { s == song }) {
-    Ok(_) -> icon.Favorite
-    Error(_) -> icon.FavoriteBorder
+  let is_favorite = case list.find(favorites, fn(s) { s == song }) {
+    Ok(_) -> True
+    Error(_) -> False
   }
 
-  view_song(
-    title: song.title,
-    artist: Some(song.artist),
-    icon: SongIcon(icon: song_icon, on_click: ClickedFavorite(song)),
-  )
+  view_song(song:, icon: None, is_favorite: Some(is_favorite))
 }
 
 fn view_message(icon: icon.Icon, message: String) -> Element(Msg) {
@@ -394,11 +381,7 @@ fn view_favorites(songs: List(Song)) -> Element(Msg) {
 }
 
 fn view_favorite_song(song: Song) -> Element(Msg) {
-  view_song(
-    title: song.title,
-    artist: Some(song.artist),
-    icon: SongIcon(icon: icon.Favorite, on_click: ClickedFavorite(song)),
-  )
+  view_song(song:, icon: None, is_favorite: Some(True))
 }
 
 type SongIcon {
@@ -406,26 +389,28 @@ type SongIcon {
 }
 
 fn view_song(
-  title title: String,
-  artist artist: Option(String),
-  icon icon: SongIcon,
+  song song: Song,
+  icon icon: Option(SongIcon),
+  is_favorite favorite: Option(Bool),
 ) -> Element(Msg) {
-  let artist_element = case artist {
-    Some(artist) -> [
-      span([class("text-sm italic  text-light-accent")], [text(artist)]),
-    ]
-    None -> []
-  }
-
   div([class("flex justify-between items-center w-full")], [
-    div(
-      [class("flex flex-col")],
-      list.concat([[span([class("text-lg")], [text(title)])], artist_element]),
-    ),
-    icon.view(
-      [class("cursor-pointer"), event.on_click(icon.on_click)],
-      icon.icon,
-    ),
+    div([class("flex flex-col")], [
+      span([class("text-lg")], [text(song.title)]),
+      span([class("text-sm italic  text-light-accent")], [text(song.artist)]),
+    ]),
+    case icon {
+      Some(SongIcon(icon, on_click)) ->
+        icon.view([class("cursor-pointer"), event.on_click(on_click)], icon)
+      None -> element.none()
+    },
+    case favorite {
+      Some(is_favorite) ->
+        icon.favorite(is_favorite, [
+          class("cursor-pointer"),
+          event.on_click(ClickedFavorite(song)),
+        ])
+      None -> element.none()
+    },
   ])
 }
 
@@ -490,16 +475,6 @@ fn watch_resize() -> Effect(Msg) {
 fn is_mobile(size: Int) -> Bool {
   size < 768
 }
-
-// fn get_song(station: station.StationName) -> Effect(Msg) {
-//   lustre_http.get(
-//     location_origin() <> "/api/station/" <> station.endpoint(station),
-//     lustre_http.expect_json(song.decode(), GotSong),
-//   )
-// }
-
-// @external(javascript, "./ffi.mjs", "locationOrigin")
-// fn location_origin() -> String
 
 // Main
 

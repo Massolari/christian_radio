@@ -1,6 +1,8 @@
+import gleam/list
 import lustre/attribute.{class}
-import lustre/element.{text}
-import lustre/element/html.{span}
+import lustre/element.{type Element, text}
+import lustre/element/html.{div, span}
+import util
 
 pub type Icon {
   DataSaverOff
@@ -40,5 +42,23 @@ fn to_string(icon: Icon) -> String {
     VolumeOff -> "volume_off"
     VolumeUp -> "volume_up"
     SyncProblem -> "sync_problem"
+  }
+}
+
+pub fn favorite(
+  is_favorite: Bool,
+  attributes: List(attribute.Attribute(msg)),
+) -> Element(msg) {
+  case is_favorite {
+    True ->
+      view(
+        attributes: list.prepend(attributes, util.hover_classes()),
+        icon: Favorite,
+      )
+    False ->
+      view(
+        attributes: list.prepend(attributes, util.hover_classes()),
+        icon: FavoriteBorder,
+      )
   }
 }

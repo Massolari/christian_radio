@@ -19,6 +19,7 @@ import plinth/browser/window
 import remote_data as rd
 import shared/song.{type Song, Song}
 import shared/station
+import util
 
 pub opaque type Model {
   Model(status: Status, volume: Float)
@@ -229,12 +230,10 @@ fn view_favorite_button(
   case song {
     rd.Success(song) ->
       button([], [
-        icon.view([class("text-3xl"), event.on_click(ClickedFavorite)], case
-          list.contains(favorites, song)
-        {
-          True -> icon.Favorite
-          False -> icon.FavoriteBorder
-        }),
+        icon.favorite(list.contains(favorites, song), [
+          class("text-3xl"),
+          event.on_click(ClickedFavorite),
+        ]),
       ])
     _ -> element.none()
   }
@@ -249,18 +248,25 @@ fn view_play_button(
     Paused -> #(Play, icon.PlayArrow)
   }
 
-  button(
-    list.concat([
-      song
-        |> rd.map(fn(_) { [] })
-        |> rd.unwrap([class("opacity-50"), disabled(True)]),
+  div([class("w-full")], [
+    button(
+      list.concat([
+        song
+          |> rd.map(fn(_) { [] })
+          |> rd.unwrap([class("opacity-50"), disabled(True)]),
+        [
+          class("flex mx-auto md:justify-center items-center w-fit gap-2"),
+          event.on_click(click_msg),
+        ],
+      ]),
       [
-        class("flex md:justify-center items-center gap-2"),
-        event.on_click(click_msg),
+        icon.view(
+          [class("text-4xl"), util.hover_classes(), event.on_click(click_msg)],
+          button_icon,
+        ),
       ],
-    ]),
-    [icon.view([class("text-4xl")], button_icon)],
-  )
+    ),
+  ])
 }
 
 fn view_volume(model: Model) -> Element(Msg) {
@@ -278,6 +284,7 @@ fn view_volume(model: Model) -> Element(Msg) {
     icon.view(
       [
         class("text-4xl cursor-pointer"),
+        util.hover_classes(),
         event.on_click(VolumeChanged(mute_volume)),
       ],
       volume_icon,

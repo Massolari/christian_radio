@@ -1,12 +1,11 @@
 import gleam/list
 import gleam/pair
 import gleam/result
-import shared/song.{type Song}
 
 pub const list = [
   Station(
     name: GospelMix,
-    display: Image(src: "/static/station-gospel-mix.jpg"),
+    display: Image(src: "/assets/station-gospel-mix.jpg"),
   ), Station(name: ChristianHits, display: Label("Christian Hits .Net")),
   Station(name: ChristianRock, display: Label("Christian Rock .Net")),
   Station(name: Melodia, display: Label("Radio Melodia")),

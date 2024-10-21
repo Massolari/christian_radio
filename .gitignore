@@ -3,3 +3,6 @@
 .DS_Store
 *.beam
 *.ez
+server/static/assets/*.js
+server/static/assets/*.css
+server/static/index.html

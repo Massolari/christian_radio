@@ -12,9 +12,6 @@ import gleam/option.{type Option, None, Some}
 import gleam/otp/actor
 import gleam/result
 import gleam/string
-import lustre/attribute
-import lustre/element.{type Element}
-import lustre/element/html
 import mist.{type Connection, type ResponseData}
 import shared/song
 import shared/station.{type StationName} as shared_station
@@ -53,29 +50,6 @@ pub type WebSocketProcessMessage {
   SendSongMessage(song.Song)
 }
 
-fn html() -> Element(a) {
-  html.html([], [
-    html.head([], [
-      html.meta([attribute.accept_charset(["utf-8"])]),
-      html.title([], "Christian radio"),
-      html.meta([
-        attribute.name("viewport"),
-        attribute.attribute("content", "width=device-width, initial-scale=1"),
-      ]),
-      html.link([attribute.rel("icon"), attribute.href("/static/favicon.svg")]),
-      html.link([
-        attribute.rel("stylesheet"),
-        attribute.href("/static/index.css"),
-      ]),
-      html.script(
-        [attribute.type_("module")],
-        "import { main } from \"/static/client.mjs\"; main()",
-      ),
-    ]),
-    html.body([], [html.div([attribute.id("app")], [])]),
-  ])
-}
-
 pub type Context {
   Context(priv_directory: String)
 }
@@ -86,18 +60,20 @@ pub fn handle_request(
   request: Request(Connection),
 ) -> Response(ResponseData) {
   case request.path_segments(request) {
-    ["ws"] -> handle_websocket(request, clients, song_history)
     [] ->
-      response.new(200)
-      |> response.set_body(
-        html()
-        |> element.to_document_string
-        |> bytes_builder.from_string
-        |> mist.Bytes,
-      )
+      "./static/index.html"
+      |> mist.send_file(offset: 0, limit: None)
+      |> io.debug
+      |> result.map(fn(file) {
+        response.new(200)
+        |> response.prepend_header("content-type", "text/html")
+        |> response.set_body(file)
+      })
+      |> result.lazy_unwrap(response_not_found)
+    ["ws"] -> handle_websocket(request, clients, song_history)
     ["api", ..path] -> handle_api_request(request, path)
-    ["static", ..] as full_path -> {
-      let file_path = string.join(full_path, "/")
+    path -> {
+      let file_path = "static/" <> string.join(path, "/")
 
       mist.send_file(file_path, offset: 0, limit: None)
       |> result.map(fn(file) {
@@ -108,7 +84,6 @@ pub fn handle_request(
       })
       |> result.lazy_unwrap(response_not_found)
     }
-    _ -> response_not_found()
   }
 }
 
@@ -133,6 +108,7 @@ fn guess_content_type(path: String) -> String {
     when: string.ends_with(path, "js"),
     return: "application/javascript",
   )
+  use <- bool.guard(when: string.ends_with(path, "html"), return: "text/html")
 
   "application/octet-stream"
 }

@@ -5,10 +5,6 @@ export default {
   root: "src",
   plugins: [gleam()],
   build: {
-    lib: {
-      name: "client",
-      entry: "./client.gleam"
-    },
     outDir: "../../server/static/"
   },
   server: {
@@ -19,7 +15,7 @@ export default {
         secure: false,
         changeOrigin: true,
       },
-      "^/static/*": {
+      "^/assets/*": {
         target: "http://localhost:8000",
         secure: false,
         changeOrigin: true,

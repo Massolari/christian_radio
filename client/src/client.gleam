@@ -379,7 +379,7 @@ fn view_message(icon: icon.Icon, message: String) -> Element(Msg) {
   div(
     [
       class(
-        "w-full h-full flex flex-col text-center items-center justify-center gap-5",
+        "w-full h-full flex flex-col text-center items-center justify-center gap-5 cursor-default",
       ),
     ],
     [icon.view([class("text-5xl")], icon), span([], [text(message)])],

@@ -229,12 +229,14 @@ fn view_favorite_button(
 ) -> Element(Msg) {
   case song {
     rd.Success(song) ->
-      button([], [
-        icon.favorite(list.contains(favorites, song), [
-          class("text-3xl"),
+      button(
+        [
+          util.active_classes(),
+          util.hover_classes(),
           event.on_click(ClickedFavorite),
-        ]),
-      ])
+        ],
+        [icon.favorite(list.contains(favorites, song), [class("text-3xl")])],
+      )
     _ -> element.none()
   }
 }
@@ -258,6 +260,7 @@ fn view_play_button(
           class("flex mx-auto md:justify-center items-center w-fit gap-2"),
           event.on_click(click_msg),
           util.hover_classes(),
+          util.active_classes(),
         ],
       ]),
       [icon.view([class("text-4xl")], button_icon)],
@@ -266,24 +269,19 @@ fn view_play_button(
 }
 
 fn view_volume(model: Model) -> Element(Msg) {
-  let mute_volume = case model.volume >. 0.0 {
-    True -> "0.0"
-    False -> "1.0"
-  }
-
-  let volume_icon = case model.volume >. 0.0 {
-    True -> icon.VolumeUp
-    False -> icon.VolumeOff
+  let #(mute_volume, volume_icon) = case model.volume >. 0.0 {
+    True -> #("0.0", icon.VolumeUp)
+    False -> #("1.0", icon.VolumeOff)
   }
 
   div([class("flex items-center gap-3")], [
-    icon.view(
+    button(
       [
-        class("text-4xl cursor-pointer"),
+        util.active_classes(),
         util.hover_classes(),
         event.on_click(VolumeChanged(mute_volume)),
       ],
-      volume_icon,
+      [icon.view([class("text-4xl cursor-pointer")], volume_icon)],
     ),
     input([
       type_("range"),

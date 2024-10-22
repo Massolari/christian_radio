@@ -20,6 +20,7 @@ import remote_data as rd
 import shared/song.{type Song, Song}
 import shared/station.{type Station}
 import shared/websocket as shared_websocket
+import util
 
 // Model
 
@@ -405,10 +406,14 @@ fn view_song(
     },
     case favorite {
       Some(is_favorite) ->
-        icon.favorite(is_favorite, [
-          class("cursor-pointer"),
-          event.on_click(ClickedFavorite(song)),
-        ])
+        button(
+          [
+            util.active_classes(),
+            util.hover_classes(),
+            event.on_click(ClickedFavorite(song)),
+          ],
+          [icon.favorite(is_favorite, [class("text-3xl")])],
+        )
       None -> element.none()
     },
   ])

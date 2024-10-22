@@ -50,15 +50,7 @@ pub fn favorite(
   attributes: List(attribute.Attribute(msg)),
 ) -> Element(msg) {
   case is_favorite {
-    True ->
-      view(
-        attributes: list.prepend(attributes, util.hover_classes()),
-        icon: Favorite,
-      )
-    False ->
-      view(
-        attributes: list.prepend(attributes, util.hover_classes()),
-        icon: FavoriteBorder,
-      )
+    True -> view(attributes: attributes, icon: Favorite)
+    False -> view(attributes: attributes, icon: FavoriteBorder)
   }
 }

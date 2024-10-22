@@ -257,14 +257,10 @@ fn view_play_button(
         [
           class("flex mx-auto md:justify-center items-center w-fit gap-2"),
           event.on_click(click_msg),
+          util.hover_classes(),
         ],
       ]),
-      [
-        icon.view(
-          [class("text-4xl"), util.hover_classes(), event.on_click(click_msg)],
-          button_icon,
-        ),
-      ],
+      [icon.view([class("text-4xl")], button_icon)],
     ),
   ])
 }

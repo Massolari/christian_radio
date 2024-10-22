@@ -63,7 +63,6 @@ pub fn handle_request(
     [] ->
       "./static/index.html"
       |> mist.send_file(offset: 0, limit: None)
-      |> io.debug
       |> result.map(fn(file) {
         response.new(200)
         |> response.prepend_header("content-type", "text/html")
@@ -385,6 +384,7 @@ pub fn main() {
   let assert Ok(_) =
     handle_request(clients, song_history, _)
     |> mist.new
+    |> mist.bind("0.0.0.0")
     |> mist.port(8000)
     |> mist.start_http
 

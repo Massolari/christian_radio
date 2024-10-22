@@ -5,6 +5,7 @@ COPY . /app
 WORKDIR /app/client
 RUN yarn install && yarn build
 WORKDIR /app/server
+RUN gleam build
 ENTRYPOINT ["gleam"]
 CMD ["run"]
 EXPOSE 8000

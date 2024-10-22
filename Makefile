@@ -8,7 +8,7 @@ server:
 build:
 	make -j 2 build-server build-client
 build-client:
-	cd client && yarn build && npx tailwind -i ./src/index.css -o ../server/static/index.css
+	cd client && yarn build
 build-server:
 	cd server && gleam build
 

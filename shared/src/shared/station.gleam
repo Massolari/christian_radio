@@ -40,7 +40,7 @@ pub fn stream_url(name: StationName) -> String {
     ChristianHits -> "https://listen.christianrock.net/stream/12/"
     ChristianRock -> "https://listen.christianrock.net/stream/11/"
     GospelMix -> "https://servidor33-3.brlogic.com:8192/live"
-    Melodia -> "https://14543.live.streamtheworld.com/MELODIAFMAAC.aac"
+    Melodia -> "https://26513.live.streamtheworld.com/MELODIAFMAAC.aac"
   }
 }
 

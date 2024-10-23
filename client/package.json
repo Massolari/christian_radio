@@ -4,7 +4,7 @@
   "main": "./src/client.gleam",
   "entry": "./src/client.gleam",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --host",
     "build": "vite build"
   },
   "license": "MIT",

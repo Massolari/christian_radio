@@ -408,11 +408,16 @@ fn view_song(
       Some(is_favorite) ->
         button(
           [
-            util.active_classes(),
+            class("group"),
             util.hover_classes(),
             event.on_click(ClickedFavorite(song)),
           ],
-          [icon.favorite(is_favorite, [class("text-3xl")])],
+          [
+            icon.favorite(is_favorite, [
+              class("text-3xl"),
+              util.group_active_classes(),
+            ]),
+          ],
         )
       None -> element.none()
     },

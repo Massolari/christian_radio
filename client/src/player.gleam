@@ -230,12 +230,13 @@ fn view_favorite_button(
   case song {
     rd.Success(song) ->
       button(
+        [class("group"), util.hover_classes(), event.on_click(ClickedFavorite)],
         [
-          util.active_classes(),
-          util.hover_classes(),
-          event.on_click(ClickedFavorite),
+          icon.favorite(list.contains(favorites, song), [
+            class("text-3xl"),
+            util.group_active_classes(),
+          ]),
         ],
-        [icon.favorite(list.contains(favorites, song), [class("text-3xl")])],
       )
     _ -> element.none()
   }
@@ -257,13 +258,12 @@ fn view_play_button(
           |> rd.map(fn(_) { [] })
           |> rd.unwrap([class("opacity-50"), disabled(True)]),
         [
-          class("flex mx-auto md:justify-center items-center w-fit gap-2"),
+          class("group flex mx-auto md:justify-center items-center w-fit gap-2"),
           event.on_click(click_msg),
           util.hover_classes(),
-          util.active_classes(),
         ],
       ]),
-      [icon.view([class("text-4xl")], button_icon)],
+      [icon.view([class("text-4xl"), util.group_active_classes()], button_icon)],
     ),
   ])
 }
@@ -277,11 +277,16 @@ fn view_volume(model: Model) -> Element(Msg) {
   div([class("flex items-center gap-3")], [
     button(
       [
-        util.active_classes(),
+        class("group"),
         util.hover_classes(),
         event.on_click(VolumeChanged(mute_volume)),
       ],
-      [icon.view([class("text-4xl cursor-pointer")], volume_icon)],
+      [
+        icon.view(
+          [class("text-4xl cursor-pointer"), util.group_active_classes()],
+          volume_icon,
+        ),
+      ],
     ),
     input([
       type_("range"),

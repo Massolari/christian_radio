@@ -1,1 +1,3 @@
-export const locationOrigin = () => window.location.origin
+export const setTitle = (title) => {
+  document.title = title
+}

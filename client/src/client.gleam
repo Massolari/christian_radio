@@ -87,10 +87,8 @@ fn update(model: Model, msg: Msg) -> #(Model, effect.Effect(Msg)) {
 
     WebSocketEvent(lustre_websocket.OnTextMessage(text)) ->
       case shared_websocket.decode(text) {
-        Ok(websocket_msg) -> #(
-          handle_websocket_message(model, websocket_msg),
-          effect.none(),
-        )
+        Ok(websocket_msg) -> handle_websocket_message(model, websocket_msg)
+
         Error(_) -> #(model, effect.none())
       }
 
@@ -152,7 +150,7 @@ fn update(model: Model, msg: Msg) -> #(Model, effect.Effect(Msg)) {
 fn handle_websocket_message(
   model: Model,
   msg: shared_websocket.WebSocketMessage,
-) -> Model {
+) -> #(Model, effect.Effect(Msg)) {
   case msg {
     shared_websocket.Song(song) -> {
       let last_song =
@@ -161,15 +159,23 @@ fn handle_websocket_message(
         |> option.map(fn(song) { [song] })
         |> option.unwrap([])
 
-      Model(
-        ..model,
-        song: rd.Success(song),
-        history: list.concat([last_song, model.history]),
+      let _ = set_title(song)
+
+      #(
+        Model(
+          ..model,
+          song: rd.Success(song),
+          history: list.concat([last_song, model.history]),
+        ),
+        effect.none(),
       )
     }
-    shared_websocket.History([]) -> model
-    shared_websocket.History([song, ..history]) ->
-      Model(..model, song: rd.Success(song), history: history)
+    shared_websocket.History([]) -> #(model, effect.none())
+    shared_websocket.History([song, ..history]) -> {
+      let _ = set_title(song)
+
+      #(Model(..model, song: rd.Success(song), history: history), effect.none())
+    }
   }
 }
 
@@ -485,6 +491,13 @@ fn watch_resize() -> Effect(Msg) {
 fn is_mobile(size: Int) -> Bool {
   size < 768
 }
+
+fn set_title(song: Song) {
+  do_set_title(song.title <> " - " <> song.artist <> " | Christian Radio")
+}
+
+@external(javascript, "./ffi.mjs", "setTitle")
+fn do_set_title(title: String) -> Nil
 
 // Main
 

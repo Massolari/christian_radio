@@ -176,7 +176,7 @@ fn handle_websocket_message(
 // View
 
 fn view(model: Model) -> Element(Msg) {
-  html.main([class("bg-main-brand flex flex-col h-screen")], [
+  html.main([class("bg-main-brand flex flex-col flex-grow h-[100dvh]")], [
     case model.is_mobile {
       True -> view_mobile(model)
       False -> view_desktop(model)

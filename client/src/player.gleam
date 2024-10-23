@@ -130,24 +130,8 @@ pub fn view(
     |> option.map(station.stream_url)
     |> option.unwrap("")
 
-  div([class("w-full mb-2 md:mb-5 px-1 h-20")], [
+  div([class("bg-dark-accent md:bg-inherit w-full pb-2 md:mb-2 px-1 h-20")], [
     audio([class("hidden"), attribute("preload", "none"), src(stream)], []),
-    case is_mobile {
-      True ->
-        div(
-          [
-            class("absolute bottom-0 left-0 right-0 h-32 pointer-events-none"),
-            style([
-              #(
-                "background",
-                "linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 100%)",
-              ),
-            ]),
-          ],
-          [],
-        )
-      False -> element.none()
-    },
     case is_mobile {
       True -> view_mobile(model, song, favorites)
       False -> view_desktop(model, song, favorites)

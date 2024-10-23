@@ -9,6 +9,13 @@
   <script type="module" defer>
     import {main} from "./client.gleam";
 
+    // Make :active work on iOS
+    window.onload = function() {
+      if (/iP(hone|ad)/.test(window.navigator.userAgent)) {
+        document.body.addEventListener("touchstart", function() {}, false);
+      }
+    }
+
     main()
   </script>
 </head>

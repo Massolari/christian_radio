@@ -15,6 +15,7 @@ import lustre_http as http
 import lustre_websocket
 import player
 import plinth/browser/window
+import plinth/javascript/global
 import plinth/javascript/storage
 import remote_data as rd
 import shared/song.{type Song, Song}
@@ -71,6 +72,7 @@ type Msg {
   ClickedTab(tab: Tab)
   PlayerMsg(player.Msg)
   ClickedFavorite(song: Song)
+  ReconnectWebSocket
 }
 
 fn update(model: Model, msg: Msg) -> #(Model, effect.Effect(Msg)) {
@@ -80,10 +82,13 @@ fn update(model: Model, msg: Msg) -> #(Model, effect.Effect(Msg)) {
       #(Model(..model, is_mobile:), effect.none())
     }
 
-    WebSocketEvent(lustre_websocket.OnOpen(ws)) -> #(
-      Model(..model, websocket: Some(ws)),
-      effect.none(),
-    )
+    WebSocketEvent(lustre_websocket.OnOpen(ws)) -> {
+      let effect = case model.station {
+        Some(station) -> lustre_websocket.send(ws, station.to_string(station))
+        None -> effect.none()
+      }
+      #(Model(..model, websocket: Some(ws)), effect)
+    }
 
     WebSocketEvent(lustre_websocket.OnTextMessage(text)) ->
       case shared_websocket.decode(text) {
@@ -98,7 +103,11 @@ fn update(model: Model, msg: Msg) -> #(Model, effect.Effect(Msg)) {
     )
     WebSocketEvent(lustre_websocket.OnClose(_)) -> #(
       Model(..model, websocket: None),
-      effect.none(),
+      effect.from(fn(dispatch) {
+        // Tenta reconectar após 3 segundos
+        global.set_timeout(3000, fn() { dispatch(ReconnectWebSocket) })
+        Nil
+      }),
     )
     WebSocketEvent(lustre_websocket.InvalidUrl) -> #(model, effect.none())
 
@@ -143,6 +152,14 @@ fn update(model: Model, msg: Msg) -> #(Model, effect.Effect(Msg)) {
       let favorites = toggle_favorite(song, model.favorites)
 
       #(Model(..model, favorites: favorites), effect.none())
+    }
+
+    ReconnectWebSocket -> {
+      let new_effect = case model.websocket {
+        None -> lustre_websocket.init("/ws", WebSocketEvent)
+        Some(_) -> effect.none()
+      }
+      #(model, new_effect)
     }
   }
 }

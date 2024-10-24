@@ -6,7 +6,7 @@ import gleam/result
 import gleam/string
 import icon
 import lustre/attribute.{
-  attribute, class, disabled, max, min, src, step, style, type_, value,
+  attribute, class, disabled, max, min, src, step, type_, value,
 }
 import lustre/effect.{type Effect}
 import lustre/element.{type Element, text}
@@ -130,13 +130,20 @@ pub fn view(
     |> option.map(station.stream_url)
     |> option.unwrap("")
 
-  div([class("bg-dark-accent md:bg-inherit w-full pb-2 md:mb-2 px-1 h-20")], [
-    audio([class("hidden"), attribute("preload", "none"), src(stream)], []),
-    case is_mobile {
-      True -> view_mobile(model, song, favorites)
-      False -> view_desktop(model, song, favorites)
-    },
-  ])
+  div(
+    [
+      class(
+        "bg-dark-accent md:bg-inherit w-full pb-2 md:mb-2 px-1 md:px-2 h-20",
+      ),
+    ],
+    [
+      audio([class("hidden"), attribute("preload", "none"), src(stream)], []),
+      case is_mobile {
+        True -> view_mobile(model, song, favorites)
+        False -> view_desktop(model, song, favorites)
+      },
+    ],
+  )
 }
 
 fn view_mobile(

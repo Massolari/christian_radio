@@ -80,12 +80,14 @@ fn get_melodia_xml_data(
   name: String,
   xml: String,
 ) -> Result(#(String, String), String) {
+  let error_mapper = fn(_) { "Could not get " <> name <> " from XML: " <> xml }
+
   xml
   |> string.split(name <> "\"><![CDATA[")
   |> list.last
-  |> result.map_error(fn(_) { "Could not get " <> name })
+  |> result.map_error(error_mapper)
   |> result.try(fn(from_title_chunk) {
     string.split_once(from_title_chunk, "]]")
-    |> result.map_error(fn(_) { "Could not get " <> name })
+    |> result.map_error(error_mapper)
   })
 }

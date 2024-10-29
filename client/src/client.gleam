@@ -35,6 +35,7 @@ type Model {
     history: List(Song),
     favorites: List(Song),
     is_mobile: Bool,
+    is_online: Bool,
   )
 }
 
@@ -58,8 +59,13 @@ fn init(init: Init) -> #(Model, effect.Effect(Msg)) {
       history: [],
       favorites: init.favorites,
       is_mobile: init.is_mobile,
+      is_online: True,
     ),
-    effect.batch([lustre_websocket.init("/ws", WebSocketEvent), watch_resize()]),
+    effect.batch([
+      lustre_websocket.init("/ws", WebSocketEvent),
+      watch_resize(),
+      watch_online_status(),
+    ]),
   )
 }
 
@@ -73,6 +79,7 @@ type Msg {
   PlayerMsg(player.Msg)
   ClickedFavorite(song: Song)
   ReconnectWebSocket
+  OnlineStatusChanged(Bool)
 }
 
 fn update(model: Model, msg: Msg) -> #(Model, effect.Effect(Msg)) {
@@ -161,6 +168,10 @@ fn update(model: Model, msg: Msg) -> #(Model, effect.Effect(Msg)) {
       }
       #(model, new_effect)
     }
+
+    OnlineStatusChanged(is_online) -> {
+      #(Model(..model, is_online: is_online), effect.none())
+    }
   }
 }
 
@@ -210,6 +221,7 @@ fn view(model: Model) -> Element(Msg) {
       station: model.station,
       favorites: model.favorites,
       is_mobile: model.is_mobile,
+      is_online: model.is_online,
     )
       |> element.map(PlayerMsg),
   ])
@@ -217,7 +229,7 @@ fn view(model: Model) -> Element(Msg) {
 
 fn view_mobile(model: Model) -> Element(Msg) {
   div([class("flex flex-col gap-8 pt-6 overflow-hidden flex-grow")], [
-    view_stations(model.station),
+    view_stations(model.station, model.is_online),
     view_tabs(model),
   ])
 }
@@ -231,7 +243,7 @@ fn view_desktop(model: Model) -> Element(Msg) {
     ],
     [
       view_desktop_history(model.history, model.favorites),
-      view_stations(model.station),
+      view_stations(model.station, model.is_online),
       view_desktop_favorites(model.favorites),
     ],
   )
@@ -259,7 +271,10 @@ fn view_desktop_favorites(favorites: List(Song)) -> Element(Msg) {
   view_desktop_section("Favoritas", view_favorites(favorites))
 }
 
-fn view_stations(current_station: Option(station.StationName)) -> Element(Msg) {
+fn view_stations(
+  current_station: Option(station.StationName),
+  is_online: Bool,
+) -> Element(Msg) {
   section([class("pl-3 flex flex-col gap-2 md:gap-3")], [
     span([class("text-light-shades text-3xl md:text-center")], [
       text("Estações"),
@@ -269,7 +284,7 @@ fn view_stations(current_station: Option(station.StationName)) -> Element(Msg) {
         class("flex gap-3 overflow-scroll md:flex-wrap pr-3"),
         style([#("scrollbar-width", "none")]),
       ],
-      list.map(station.list, view_station(current_station, _)),
+      list.map(station.list, view_station(current_station, _, is_online)),
     ),
   ])
 }
@@ -277,6 +292,7 @@ fn view_stations(current_station: Option(station.StationName)) -> Element(Msg) {
 fn view_station(
   current_station: Option(station.StationName),
   station: Station,
+  is_online: Bool,
 ) -> Element(Msg) {
   let is_selected = current_station == Some(station.name)
 
@@ -285,40 +301,56 @@ fn view_station(
     False -> ""
   }
 
+  let offline_classes = case is_online {
+    True -> ""
+    False -> "opacity-50 cursor-not-allowed"
+  }
+
   let card_classes =
     class(
       "w-36 h-36 md:w-48 md:h-48 rounded-lg active:scale-90 active:duration-100 hover:opacity-80 hover:duration-200 transition-all cursor-pointer "
-      <> selected_classes,
+      <> selected_classes
+      <> " "
+      <> offline_classes,
     )
 
-  li([class("relative"), event.on_click(SelectedStation(station.name))], [
-    case is_selected {
-      True ->
-        div(
-          [
-            class(
-              "absolute top-0 left-0 w-full h-full text-light-shades flex items-center justify-center",
-            ),
-          ],
-          [view_animated_equalizer()],
-        )
-      False -> text("")
-    },
-    case station.display {
-      station.Label(value) ->
-        div(
-          [
-            card_classes,
-            class(
-              "bg-light-shades text-xl flex items-center text-center justify-center",
-            ),
-          ],
-          [text(value)],
-        )
-      station.Image(_ as image_src) ->
-        div([card_classes], [img([class("rounded-lg"), src(image_src)])])
-    },
-  ])
+  li(
+    [
+      class("relative"),
+      case is_online {
+        True -> event.on_click(SelectedStation(station.name))
+        False -> attribute.none()
+      },
+    ],
+    [
+      case is_selected {
+        True ->
+          div(
+            [
+              class(
+                "absolute top-0 left-0 w-full h-full text-light-shades flex items-center justify-center",
+              ),
+            ],
+            [view_animated_equalizer()],
+          )
+        False -> text("")
+      },
+      case station.display {
+        station.Label(value) ->
+          div(
+            [
+              card_classes,
+              class(
+                "bg-light-shades text-xl flex items-center text-center justify-center",
+              ),
+            ],
+            [text(value)],
+          )
+        station.Image(_ as image_src) ->
+          div([card_classes], [img([class("rounded-lg"), src(image_src)])])
+      },
+    ],
+  )
 }
 
 fn view_animated_equalizer() -> Element(Msg) {
@@ -515,6 +547,20 @@ fn set_title(song: Song) {
 
 @external(javascript, "./ffi.mjs", "setTitle")
 fn do_set_title(title: String) -> Nil
+
+fn watch_online_status() -> Effect(Msg) {
+  use dispatch <- effect.from
+
+  window.add_event_listener("online", fn(_) {
+    dispatch(OnlineStatusChanged(True))
+    Nil
+  })
+
+  window.add_event_listener("offline", fn(_) {
+    dispatch(OnlineStatusChanged(False))
+    Nil
+  })
+}
 
 // Main
 

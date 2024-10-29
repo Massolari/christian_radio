@@ -97,6 +97,10 @@ fn guess_content_type(path: String) -> String {
     return: "application/javascript",
   )
   use <- bool.guard(when: string.ends_with(path, "html"), return: "text/html")
+  use <- bool.guard(
+    when: string.ends_with(path, "json"),
+    return: "application/json",
+  )
 
   "application/octet-stream"
 }
@@ -260,16 +264,16 @@ pub fn new_song_history_manager(
           |> station.get_song
           |> result.unwrap(song.Song(title: "Unknown", artist: "Unknown"))
 
-            process.send(subject, song)
+        process.send(subject, song)
 
-            let new_history =
-              dict.upsert(history, station, fn(maybe_songs) {
-                maybe_songs
-                |> option.unwrap([])
-                |> list.prepend(song)
-              })
+        let new_history =
+          dict.upsert(history, station, fn(maybe_songs) {
+            maybe_songs
+            |> option.unwrap([])
+            |> list.prepend(song)
+          })
 
-            actor.continue(new_history)
+        actor.continue(new_history)
       }
     }
   })

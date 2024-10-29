@@ -124,6 +124,7 @@ pub fn view(
   station station: Option(station.StationName),
   favorites favorites: List(Song),
   is_mobile is_mobile: Bool,
+  is_online is_online: Bool,
 ) -> Element(Msg) {
   let stream =
     station
@@ -138,9 +139,13 @@ pub fn view(
     ],
     [
       audio([class("hidden"), attribute("preload", "none"), src(stream)], []),
-      case is_mobile {
-        True -> view_mobile(model, song, favorites)
-        False -> view_desktop(model, song, favorites)
+      case is_online {
+        False -> view_offline(is_mobile)
+        True ->
+          case is_mobile {
+            True -> view_mobile(model, song, favorites)
+            False -> view_desktop(model, song, favorites)
+          }
       },
     ],
   )
@@ -289,4 +294,37 @@ fn view_volume(model: Model) -> Element(Msg) {
       class("w-full accent-black h-1"),
     ]),
   ])
+}
+
+fn view_offline(is_mobile: Bool) -> Element(Msg) {
+  let content =
+    div([class("flex flex-col gap-1 w-full")], [
+      span([class("text-dark-shades text-lg font-medium text-center")], [
+        text("Você está offline"),
+      ]),
+      span([class("text-dark-accent text-sm italic text-center")], [
+        text("Verifique sua conexão com a internet"),
+      ]),
+    ])
+
+  case is_mobile {
+    True ->
+      div(
+        [
+          class(
+            "relative w-full h-full bg-light-shades rounded-lg flex justify-between px-5 py-3 items-center",
+          ),
+        ],
+        [content],
+      )
+    False ->
+      div(
+        [
+          class(
+            "relative w-full h-full bg-light-shades rounded-lg grid grid-cols-[1fr_1fr_1fr] px-5 py-3 items-center",
+          ),
+        ],
+        [content],
+      )
+  }
 }

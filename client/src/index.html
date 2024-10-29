@@ -7,6 +7,12 @@
   <link rel="icon" href="/assets/favicon.ico" type="image/x-icon">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="./index.css">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Christian Radio">
+  <link rel="apple-touch-icon" href="/assets/icon-192x192.png">
   <script type="module" defer>
     import {main} from "./client.gleam";
 
@@ -15,6 +21,19 @@
       if (/iP(hone|ad)/.test(window.navigator.userAgent)) {
         document.body.addEventListener("touchstart", function() {}, false);
       }
+    }
+
+    // Register Service Worker
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .then(registration => {
+            console.log('ServiceWorker registration successful');
+          })
+          .catch(err => {
+            console.log('ServiceWorker registration failed: ', err);
+          });
+      });
     }
 
     main()

@@ -1,15 +1,11 @@
 import gleam/bit_array
-import gleam/bytes_builder
 import gleam/dynamic.{type Dynamic}
 import gleam/http
 import gleam/http/request
-import gleam/http/response.{type Response}
 import gleam/httpc
 import gleam/io
-import gleam/json
 import gleam/result
 import gleam/string
-import mist.{type ResponseData}
 import shared/song.{type Song}
 import shared/station.{
   type StationName, ChristianHits, ChristianRock, GospelMix, Melodia,
@@ -21,37 +17,6 @@ fn send_with_ssl_options(
   url: String,
   headers: List(http.Header),
 ) -> Result(#(Int, List(http.Header), BitArray), Dynamic)
-
-pub fn handle_request(station: String) -> Response(ResponseData) {
-  result.unwrap_both({
-    use name <- result.try(
-      station
-      |> station.from_endpoint
-      |> result.replace_error(
-        response.new(404)
-        |> response.set_body(mist.Bytes(bytes_builder.new())),
-      ),
-    )
-
-    use song <- result.map(
-      name
-      |> get_song
-      |> result.map_error(fn(error) {
-        response.new(500)
-        |> response.set_body(mist.Bytes(bytes_builder.from_string(error)))
-      }),
-    )
-
-    response.new(200)
-    |> response.set_body(
-      song
-      |> song.encode
-      |> json.to_string
-      |> bytes_builder.from_string
-      |> mist.Bytes,
-    )
-  })
-}
 
 pub fn get_song(station: StationName) -> Result(Song, String) {
   case station {

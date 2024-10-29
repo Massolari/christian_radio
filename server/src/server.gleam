@@ -70,7 +70,6 @@ pub fn handle_request(
       })
       |> result.lazy_unwrap(response_not_found)
     ["ws"] -> handle_websocket(request, clients, song_history)
-    ["api", ..path] -> handle_api_request(request, path)
     path -> {
       let file_path = "static/" <> string.join(path, "/")
 
@@ -83,16 +82,6 @@ pub fn handle_request(
       })
       |> result.lazy_unwrap(response_not_found)
     }
-  }
-}
-
-fn handle_api_request(
-  _request: Request(Connection),
-  path: List(String),
-) -> Response(ResponseData) {
-  case path {
-    ["station", station] -> station.handle_request(station)
-    _ -> response_not_found()
   }
 }
 
@@ -266,8 +255,11 @@ pub fn new_song_history_manager(
         actor.continue(history)
       }
       HistoryGetSong(subject, station) -> {
-        case station.get_song(station) {
-          Ok(song) -> {
+        let song =
+          station
+          |> station.get_song
+          |> result.unwrap(song.Song(title: "Unknown", artist: "Unknown"))
+
             process.send(subject, song)
 
             let new_history =
@@ -278,9 +270,6 @@ pub fn new_song_history_manager(
               })
 
             actor.continue(new_history)
-          }
-          Error(_) -> actor.continue(history)
-        }
       }
     }
   })

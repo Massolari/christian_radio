@@ -13,10 +13,11 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="Christian Radio">
   <link rel="apple-touch-icon" href="/assets/icon-192x192.png">
-  <script src="https://cdn.jsdelivr.net/npm/ios-pwa-splash@1.0.0/cdn.min.js"></script>
-  <script>iosPWASplash('/assets/icon-192x192.png', '#677A98');</script>
   <script type="module" defer>
     import {main} from "./client.gleam";
+    import iosPWASplash from 'ios-pwa-splash';
+
+    iosPWASplash('/assets/icon-192x192.png', '#677A98')
 
     // Make :active work on iOS
     window.onload = function() {

@@ -696,6 +696,11 @@ hasown@^2.0.0:
   dependencies:
     function-bind "^1.1.2"
 
+ios-pwa-splash@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/ios-pwa-splash/-/ios-pwa-splash-1.0.0.tgz#f35e20805811cbbddb1909ab2256bb4b7e3c2e3a"
+  integrity sha512-3T2D1G88RvSU9MpdUHeh3MaQ7AW9r280CyBgKzt96x7bd7/dPpDdDeYmuF4I35OTsWVNHweQkBwN9q07+/rQjQ==
+
 is-binary-path@~2.1.0:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/is-binary-path/-/is-binary-path-2.1.0.tgz#ea1f7f3b80f064236e83470f86c09c254fb45b09"

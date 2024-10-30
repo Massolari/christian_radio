@@ -14,5 +14,8 @@
     "tailwindcss": "^3.4.3",
     "vite": "^5.2.7",
     "vite-gleam": "^0.4.1"
+  },
+  "dependencies": {
+    "ios-pwa-splash": "^1.0.0"
   }
 }

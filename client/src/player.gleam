@@ -35,8 +35,10 @@ pub fn init() -> Model {
 }
 
 pub opaque type Msg {
-  Play
-  Pause
+  ClickedPlay
+  ClickedPause
+  WasPlayed
+  WasPaused
   ClickedFavorite
   VolumeChanged(String)
 }
@@ -47,8 +49,10 @@ pub type OutMsg {
 
 pub fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg), Option(OutMsg)) {
   case msg {
-    Play -> play(model)
-    Pause -> pause(model)
+    ClickedPlay -> play(model)
+    ClickedPause -> pause(model)
+    WasPlayed -> #(Model(..model, status: Playing), effect.none(), None)
+    WasPaused -> #(Model(..model, status: Paused), effect.none(), None)
     ClickedFavorite -> #(model, effect.none(), Some(Favorite))
     VolumeChanged(volume) -> {
       let audio = document.query_selector("audio")
@@ -138,7 +142,16 @@ pub fn view(
       ),
     ],
     [
-      audio([class("hidden"), attribute("preload", "none"), src(stream)], []),
+      audio(
+        [
+          class("hidden"),
+          event.on("play", fn(_) { Ok(WasPlayed) }),
+          event.on("pause", fn(_) { Ok(WasPaused) }),
+          attribute("preload", "none"),
+          src(stream),
+        ],
+        [],
+      ),
       case is_online {
         False -> view_offline(is_mobile)
         True ->
@@ -243,8 +256,8 @@ fn view_play_button(
   song: rd.RemoteData(Song, http.HttpError),
 ) -> Element(Msg) {
   let #(click_msg, button_icon) = case model.status {
-    Playing -> #(Pause, icon.Pause)
-    Paused -> #(Play, icon.PlayArrow)
+    Playing -> #(ClickedPause, icon.Pause)
+    Paused -> #(ClickedPlay, icon.PlayArrow)
   }
 
   div([class("w-full")], [

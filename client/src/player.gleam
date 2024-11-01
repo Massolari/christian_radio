@@ -5,9 +5,7 @@ import gleam/option.{type Option, None, Some}
 import gleam/result
 import gleam/string
 import icon
-import lustre/attribute.{
-  attribute, class, disabled, max, min, src, step, type_, value,
-}
+import lustre/attribute.{attribute, class, max, min, src, step, type_, value}
 import lustre/effect.{type Effect}
 import lustre/element.{type Element, text}
 import lustre/element/html.{audio, button, div, input, span}
@@ -192,7 +190,7 @@ fn view_mobile(
       },
       div([class("flex")], [
         view_favorite_button(song, favorites),
-        view_play_button(model, song),
+        view_play_button(model),
       ]),
     ],
   )
@@ -223,7 +221,7 @@ fn view_desktop(
         },
         view_favorite_button(song, favorites),
       ]),
-      view_play_button(model, song),
+      view_play_button(model),
       view_volume(model),
     ],
   )
@@ -255,10 +253,7 @@ fn view_favorite_button(
   }
 }
 
-fn view_play_button(
-  model: Model,
-  song: rd.RemoteData(Song, http.HttpError),
-) -> Element(Msg) {
+fn view_play_button(model: Model) -> Element(Msg) {
   let #(click_msg, button_icon) = case model.status {
     Playing -> #(ClickedPause, icon.Pause)
     Paused -> #(ClickedPlay, icon.PlayArrow)
@@ -266,16 +261,11 @@ fn view_play_button(
 
   div([class("w-full")], [
     button(
-      list.concat([
-        song
-          |> rd.map(fn(_) { [] })
-          |> rd.unwrap([class("opacity-50"), disabled(True)]),
-        [
-          class("group flex mx-auto md:justify-center items-center w-fit gap-2"),
-          event.on_click(click_msg),
-          util.hover_classes(),
-        ],
-      ]),
+      [
+        class("group flex mx-auto md:justify-center items-center w-fit gap-2"),
+        event.on_click(click_msg),
+        util.hover_classes(),
+      ],
       [icon.view([class("text-4xl"), util.group_active_classes()], button_icon)],
     ),
   ])

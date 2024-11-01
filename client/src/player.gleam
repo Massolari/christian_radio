@@ -122,6 +122,10 @@ pub fn pause(model: Model) -> #(Model, Effect(Msg), Option(OutMsg)) {
   #(Model(..model, status: Paused), play_pause(False), None)
 }
 
+pub fn is_playing(model: Model) -> Bool {
+  model.status == Playing
+}
+
 pub fn view(
   player model: Model,
   current_song song: rd.RemoteData(Song, http.HttpError),

@@ -35,6 +35,16 @@
   70% { height: 10%; }
 }
 
+@keyframes equalizer-pause-lower {
+  0% { height: 60% }
+  100% { height: 6px; }
+}
+
+@keyframes equalizer-pause-higher {
+  0% { height: 80%; }
+  100% { height: 6px; }
+}
+
 .equalizer {
   display: flex;
   align-items: center;
@@ -50,18 +60,38 @@
   animation-duration: 1s;
   animation-iteration-count: infinite;
   animation-timing-function: ease-in-out;
+  animation-fill-mode: forwards;
 }
 
-.equalizer-bar:nth-child(1) { animation-name: equalizer-bar1; }
+.equalizer-bar:nth-child(1) { 
+  animation-name: equalizer-bar1;
+  animation-play-state: running;
+}
 .equalizer-bar:nth-child(2) { 
   animation-name: equalizer-bar2;
   animation-delay: -0.2s;
+  animation-play-state: running;
 }
 .equalizer-bar:nth-child(3) { 
   animation-name: equalizer-bar3;
   animation-delay: -0.4s;
+  animation-play-state: running;
 }
 .equalizer-bar:nth-child(4) { 
   animation-name: equalizer-bar4;
   animation-delay: -0.6s;
+  animation-play-state: running;
+}
+
+.equalizer.paused > .equalizer-bar:nth-child(1) {
+  animation: equalizer-pause-lower 1s;
+}
+.equalizer.paused > .equalizer-bar:nth-child(2) {
+  animation: equalizer-pause-higher 1s;
+}
+.equalizer.paused > .equalizer-bar:nth-child(3) {
+  animation: equalizer-pause-higher 1s;
+}
+.equalizer.paused > .equalizer-bar:nth-child(4) {
+  animation: equalizer-pause-lower 1s;
 }

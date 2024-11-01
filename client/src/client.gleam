@@ -229,7 +229,11 @@ fn view(model: Model) -> Element(Msg) {
 
 fn view_mobile(model: Model) -> Element(Msg) {
   div([class("flex flex-col gap-8 pt-6 overflow-hidden flex-grow")], [
-    view_stations(model.station, model.is_online),
+    view_stations(
+      model.station,
+      model.is_online,
+      player.is_playing(model.player),
+    ),
     view_tabs(model),
   ])
 }
@@ -243,7 +247,11 @@ fn view_desktop(model: Model) -> Element(Msg) {
     ],
     [
       view_desktop_history(model.history, model.favorites),
-      view_stations(model.station, model.is_online),
+      view_stations(
+        model.station,
+        model.is_online,
+        player.is_playing(model.player),
+      ),
       view_desktop_favorites(model.favorites),
     ],
   )
@@ -274,6 +282,7 @@ fn view_desktop_favorites(favorites: List(Song)) -> Element(Msg) {
 fn view_stations(
   current_station: Option(station.StationName),
   is_online: Bool,
+  is_playing: Bool,
 ) -> Element(Msg) {
   section([class("pl-3 flex flex-col gap-2 md:gap-3")], [
     span([class("text-light-shades text-3xl md:text-center")], [
@@ -284,7 +293,12 @@ fn view_stations(
         class("flex gap-3 overflow-scroll md:flex-wrap pr-3"),
         style([#("scrollbar-width", "none")]),
       ],
-      list.map(station.list, view_station(current_station, _, is_online)),
+      list.map(station.list, view_station(
+        current_station,
+        _,
+        is_online,
+        is_playing,
+      )),
     ),
   ])
 }
@@ -293,6 +307,7 @@ fn view_station(
   current_station: Option(station.StationName),
   station: Station,
   is_online: Bool,
+  is_playing: Bool,
 ) -> Element(Msg) {
   let is_selected = current_station == Some(station.name)
 
@@ -331,7 +346,7 @@ fn view_station(
                 "absolute top-0 left-0 w-full h-full text-light-shades flex items-center justify-center",
               ),
             ],
-            [view_animated_equalizer()],
+            [view_animated_equalizer(is_playing:)],
           )
         False -> text("")
       },
@@ -353,8 +368,13 @@ fn view_station(
   )
 }
 
-fn view_animated_equalizer() -> Element(Msg) {
-  div([class("equalizer")], [
+fn view_animated_equalizer(is_playing is_playing: Bool) -> Element(Msg) {
+  let equalizer_classes = case is_playing {
+    True -> "equalizer"
+    False -> "equalizer paused"
+  }
+
+  div([class(equalizer_classes)], [
     div([class("equalizer-bar")], []),
     div([class("equalizer-bar")], []),
     div([class("equalizer-bar")], []),

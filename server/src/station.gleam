@@ -1,22 +1,11 @@
-import gleam/bit_array
-import gleam/dynamic.{type Dynamic}
-import gleam/http
 import gleam/http/request
 import gleam/httpc
 import gleam/io
 import gleam/result
-import gleam/string
 import shared/song.{type Song}
 import shared/station.{
   type StationName, ChristianHits, ChristianRock, GospelMix, Melodia,
 }
-
-@external(erlang, "hackney_ssl_ffi", "send_with_ssl_options")
-fn send_with_ssl_options(
-  method: http.Method,
-  url: String,
-  headers: List(http.Header),
-) -> Result(#(Int, List(http.Header), BitArray), Dynamic)
 
 pub fn get_song(station: StationName) -> Result(Song, String) {
   case station {
@@ -36,28 +25,15 @@ pub fn get_christian_rock() -> Result(Song, String) {
 }
 
 fn get_christianrock_radio_song(radio: String) -> Result(Song, String) {
+  let assert Ok(request) = request.to(radio)
+
   use response <- result.try(
-    send_with_ssl_options(http.Get, radio, [
-      #("Host", "www.christianrock.net"),
-      #("Connection", "close"),
-    ])
-    |> result.map_error(fn(err) {
-      io.debug("Erro na requisição HTTP: " <> string.inspect(err))
-      "Falha na conexão SSL"
-    }),
+    request
+    |> httpc.send
+    |> map_httpc_error,
   )
 
-  let #(_, _, body_bit_array) = response
-
-  use body <- result.try(
-    body_bit_array
-    |> bit_array.to_string
-    |> result.map_error(fn(_) {
-      "Falha ao converter corpo da resposta para string"
-    }),
-  )
-
-  body
+  response.body
   |> song.christianrock_decoder
   |> map_decoder_error
 }
@@ -98,7 +74,9 @@ fn get_melodia() -> Result(Song, String) {
   |> map_decoder_error
 }
 
-fn map_httpc_error(httpc_result: Result(a, Dynamic)) -> Result(a, String) {
+fn map_httpc_error(
+  httpc_result: Result(a, httpc.HttpError),
+) -> Result(a, String) {
   use error <- result.map_error(httpc_result)
   io.debug(error)
 

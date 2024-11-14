@@ -13,34 +13,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="Christian Radio">
   <link rel="apple-touch-icon" href="/assets/icon-192x192.png">
-  <script type="module" defer>
-    import {main} from "./client.gleam";
-    import iosPWASplash from 'ios-pwa-splash';
-
-    iosPWASplash('/assets/icon-192x192.png', '#677A98')
-
-    // Make :active work on iOS
-    window.onload = function() {
-      if (/iP(hone|ad)/.test(window.navigator.userAgent)) {
-        document.body.addEventListener("touchstart", function() {}, false);
-      }
-    }
-
-    // Register Service Worker
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js')
-          .then(registration => {
-            console.log('ServiceWorker registration successful');
-          })
-          .catch(err => {
-            console.log('ServiceWorker registration failed: ', err);
-          });
-      });
-    }
-
-    main()
-  </script>
+  <script type="module" src="./main.js" defer></script>
 </head>
 
 <body>

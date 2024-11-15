@@ -1,3 +1,4 @@
+import client_manager.{type ClientManager}
 import gleam/bool
 import gleam/bytes_builder
 import gleam/dict.{type Dict}
@@ -8,7 +9,7 @@ import gleam/http/response.{type Response}
 import gleam/io
 import gleam/json
 import gleam/list
-import gleam/option.{type Option, None, Some}
+import gleam/option.{None, Some}
 import gleam/otp/actor
 import gleam/result
 import gleam/string
@@ -17,25 +18,6 @@ import shared/song
 import shared/station.{type StationName} as shared_station
 import shared/websocket as shared_websocket
 import station
-
-pub type WebSocketClients =
-  Subject(WebSocketManagerMessage)
-
-pub type ClientState {
-  ClientState(
-    station: Option(StationName),
-    conn: mist.WebsocketConnection,
-    subject: Subject(WebSocketProcessMessage),
-  )
-}
-
-pub type WebSocketManagerMessage {
-  Connect(mist.WebsocketConnection, Subject(WebSocketProcessMessage))
-  Disconnect(mist.WebsocketConnection)
-  SetStation(mist.WebsocketConnection, StationName)
-  GetClients(Subject(List(ClientState)))
-  SendSong(mist.WebsocketConnection, song.Song)
-}
 
 pub type SongHistory =
   Dict(StationName, List(song.Song))
@@ -46,16 +28,12 @@ pub type SongHistoryMessage {
   HistoryGetSongHistory(Subject(List(song.Song)), StationName)
 }
 
-pub type WebSocketProcessMessage {
-  SendSongMessage(song.Song)
-}
-
 pub type Context {
   Context(priv_directory: String)
 }
 
 pub fn handle_request(
-  clients: WebSocketClients,
+  client_manager: ClientManager,
   song_history: Subject(SongHistoryMessage),
   request: Request(Connection),
 ) -> Response(ResponseData) {
@@ -69,7 +47,7 @@ pub fn handle_request(
         |> response.set_body(file)
       })
       |> result.lazy_unwrap(response_not_found)
-    ["ws"] -> handle_websocket(request, clients, song_history)
+    ["ws"] -> handle_websocket(request, client_manager, song_history)
     path -> {
       let file_path = "static/" <> string.join(path, "/")
 
@@ -107,7 +85,7 @@ fn guess_content_type(path: String) -> String {
 
 fn handle_websocket(
   request: Request(Connection),
-  websocket_manager: WebSocketClients,
+  client_manager: ClientManager,
   song_history: Subject(SongHistoryMessage),
 ) -> Response(ResponseData) {
   let selector = process.new_selector()
@@ -120,16 +98,17 @@ fn handle_websocket(
       let this_selector =
         process.selecting(selector, subject, function.identity)
 
-      process.send(websocket_manager, Connect(conn, subject))
+      client_manager.add(client_manager, conn, subject)
+
       #(conn, Some(this_selector))
     },
-    on_close: fn(state) { process.send(websocket_manager, Disconnect(state)) },
+    on_close: fn(state) { client_manager.remove(client_manager, state) },
     handler: fn(state, _conn, msg) {
       case msg {
         mist.Text(text) -> {
           case shared_station.from_string(text) {
             Ok(station) -> {
-              process.send(websocket_manager, SetStation(state, station))
+              client_manager.set_station(client_manager, state, station)
 
               // Get song history from the station
               // If the history is empty, get the last song from the station
@@ -175,7 +154,7 @@ fn handle_websocket(
             Error(_) -> actor.continue(state)
           }
         }
-        mist.Custom(SendSongMessage(song)) -> {
+        mist.Custom(client_manager.ClientSendSong(song)) -> {
           let _ = send_websocket_message(shared_websocket.Song(song), state)
 
           actor.continue(state)
@@ -187,66 +166,18 @@ fn handle_websocket(
   )
 }
 
-/// Inicializa o gerenciador de clientes websocket
-/// O gerenciador de clientes websocket é responsável por gerenciar os clientes conectados
-pub fn new_websocket_manager() -> Result(
-  Subject(WebSocketManagerMessage),
-  actor.StartError,
-) {
-  actor.start(dict.new(), fn(msg, clients) {
-    case msg {
-      Connect(conn, subject) -> {
-        actor.continue(dict.insert(
-          clients,
-          conn,
-          ClientState(conn:, subject:, station: None),
-        ))
-      }
-      Disconnect(conn) -> actor.continue(dict.delete(clients, conn))
-      SetStation(conn, station) ->
-        clients
-        |> dict.get(conn)
-        |> result.map(fn(client) {
-          ClientState(..client, station: Some(station))
-        })
-        |> result.map(dict.insert(clients, conn, _))
-        |> result.unwrap(clients)
-        |> actor.continue
-
-      GetClients(subject) -> {
-        clients
-        |> dict.values
-        |> list.filter(fn(client) { option.is_some(client.station) })
-        |> process.send(subject, _)
-
-        actor.continue(clients)
-      }
-      SendSong(conn, song) -> {
-        let _ =
-          clients
-          |> dict.get(conn)
-          |> result.map(fn(client) {
-            process.send(client.subject, SendSongMessage(song))
-          })
-
-        actor.continue(clients)
-      }
-    }
-  })
-}
-
 /// Inicializa o gerenciador de histórico de músicas
 /// O gerenciador de histórico de músicas é responsável por buscar músicas das estações de clientes
 /// e armazenar o histórico de músicas de cada estação
 pub fn new_song_history_manager(
-  websocket_manager: Subject(WebSocketManagerMessage),
+  client_manager: ClientManager,
 ) -> Result(Subject(SongHistoryMessage), actor.StartError) {
   actor.start(dict.new(), fn(msg, history) {
     case msg {
       HistoryFetchSongs ->
-        websocket_manager
-        |> process.try_call(GetClients, 5000)
-        |> result.map(fetch_songs_for_clients(_, history, websocket_manager))
+        client_manager
+        |> client_manager.get_all
+        |> result.map(fetch_songs_for_clients(_, history, client_manager))
         |> result.unwrap(history)
         |> actor.continue
 
@@ -280,9 +211,9 @@ pub fn new_song_history_manager(
 }
 
 pub fn fetch_songs_for_clients(
-  client_states: List(ClientState),
+  client_states: List(client_manager.Client),
   history: Dict(StationName, List(song.Song)),
-  websocket_manager: Subject(WebSocketManagerMessage),
+  client_manager: ClientManager,
 ) -> Dict(StationName, List(song.Song)) {
   io.println("Fetching songs for clients")
   // Group clients by station
@@ -330,9 +261,10 @@ pub fn fetch_songs_for_clients(
 
       // Send song to all clients of this station
       list.each(clients_with_station, fn(client_station) {
-        process.send(
-          websocket_manager,
-          SendSong({ client_station.0 }.conn, song),
+        client_manager.send_song(
+          client_manager,
+          { client_station.0 }.conn,
+          song,
         )
       })
 
@@ -365,17 +297,17 @@ pub fn send_websocket_message(
 
 pub fn main() {
   // Inicializa o gerenciador de clientes websocket
-  let assert Ok(clients) = new_websocket_manager()
+  let assert Ok(client_manager) = client_manager.new()
 
   // Inicializa o gerenciador de histórico de músicas
-  let assert Ok(song_history) = new_song_history_manager(clients)
+  let assert Ok(song_history) = new_song_history_manager(client_manager)
 
   // Inicie a execução periódica em um novo processo
   process.start(fn() { fetch_song_periodically(song_history) }, True)
 
   // Inicializa o servidor HTTP
   let assert Ok(_) =
-    handle_request(clients, song_history, _)
+    handle_request(client_manager, song_history, _)
     |> mist.new
     |> mist.bind("0.0.0.0")
     |> mist.port(8000)

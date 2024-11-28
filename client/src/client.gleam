@@ -414,7 +414,7 @@ fn view_history(songs: List(Song), favorites: List(Song)) -> Element(Msg) {
     songs ->
       songs
       |> list.map(view_history_song(_, favorites))
-      |> view_song_list_container
+      |> element.keyed(view_song_list_container, _)
   }
 }
 
@@ -433,13 +433,19 @@ fn view_song_list_item(content: Element(Msg)) -> Element(Msg) {
   li([], [content])
 }
 
-fn view_history_song(song: Song, favorites: List(Song)) -> Element(Msg) {
+fn view_history_song(
+  song: Song,
+  favorites: List(Song),
+) -> #(String, Element(Msg)) {
   let is_favorite = case list.find(favorites, fn(s) { s == song }) {
     Ok(_) -> True
     Error(_) -> False
   }
 
-  view_song(song:, icon: None, is_favorite: Some(is_favorite))
+  #(
+    song.title <> song.artist,
+    view_song(song:, icon: None, is_favorite: Some(is_favorite)),
+  )
 }
 
 fn view_message(icon: icon.Icon, message: String) -> Element(Msg) {
@@ -456,12 +462,18 @@ fn view_message(icon: icon.Icon, message: String) -> Element(Msg) {
 fn view_favorites(songs: List(Song)) -> Element(Msg) {
   case songs {
     [] -> view_message(icon.HeartBroken, "Nenhuma música favoritada ainda")
-    songs -> view_song_list_container(list.map(songs, view_favorite_song))
+    songs ->
+      songs
+      |> list.map(view_favorite_song)
+      |> element.keyed(view_song_list_container, _)
   }
 }
 
-fn view_favorite_song(song: Song) -> Element(Msg) {
-  view_song(song:, icon: None, is_favorite: Some(True))
+fn view_favorite_song(song: Song) -> #(String, Element(Msg)) {
+  #(
+    song.title <> song.artist,
+    view_song(song:, icon: None, is_favorite: Some(True)),
+  )
 }
 
 type SongIcon {

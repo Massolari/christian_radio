@@ -425,12 +425,8 @@ fn view_song_list_container(content: List(Element(Msg))) -> Element(Msg) {
         "relative text-light-shades px-6 py-5 flex flex-col gap-3 overflow-y-auto h-full",
       ),
     ],
-    list.map(content, view_song_list_item),
+    content,
   )
-}
-
-fn view_song_list_item(content: Element(Msg)) -> Element(Msg) {
-  li([], [content])
 }
 
 fn view_history_song(
@@ -444,7 +440,9 @@ fn view_history_song(
 
   #(
     song.title <> song.artist,
-    view_song(song:, icon: None, is_favorite: Some(is_favorite)),
+    li([class("song-enter")], [
+      view_song(song:, icon: None, is_favorite: Some(is_favorite)),
+    ]),
   )
 }
 

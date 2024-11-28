@@ -78,14 +78,3 @@ pub fn from_string(name: String) -> Result(StationName, Nil) {
     _ -> Error(Nil)
   }
 }
-
-pub fn from_endpoint(endpoint: String) -> Result(StationName, Nil) {
-  [
-    #(christian_hits_endpoint, ChristianHits),
-    #(christian_rock_endpoint, ChristianRock),
-    #(gospel_mix_endpoint, GospelMix),
-    #(melodia_endpoint, Melodia),
-  ]
-  |> list.find(fn(endpoint_name) { endpoint_name.0 == endpoint })
-  |> result.map(pair.second)
-}

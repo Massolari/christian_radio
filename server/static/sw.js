@@ -1,10 +1,20 @@
-const CACHE_NAME = 'christian-radio-v2';
+const CACHE_PREFIX = 'christian-radio-';
+const CACHE_NAME = CACHE_PREFIX + (typeof GIT_COMMIT_HASH !== 'undefined' ? GIT_COMMIT_HASH : 'dev');
+
+function generateCacheVersion(assets) {
+  return btoa(assets.join('|')).slice(0, 8);
+}
+
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
   '/manifest.json',
   '/assets/favicon.ico',
   '/assets/station-gospel-mix.jpg',
+  '/assets/station-christian-hits.jpg',
+  '/assets/station-christian-rock.jpg',
+  '/assets/station-melodia.png',
+  '/assets/station-radio-93.png',
 ];
 
 // Instalação do Service Worker

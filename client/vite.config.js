@@ -1,11 +1,17 @@
-import gleam from 'vite-gleam'
-import { defineConfig } from 'vite'
+import gleam from "vite-gleam";
+import { defineConfig } from "vite";
+import { execSync } from "child_process";
 
 export default defineConfig({
-  root: 'src',
+  root: "src",
   plugins: [gleam()],
   build: {
-    outDir: "../../server/static/"
+    outDir: "../../server/static/",
+  },
+  define: {
+    GIT_COMMIT_HASH: JSON.stringify(
+      execSync("git rev-parse --short HEAD").toString().trim()
+    ),
   },
   server: {
     port: 9000,
@@ -35,6 +41,6 @@ export default defineConfig({
         secure: false,
         changeOrigin: true,
       },
-    }
+    },
   },
-})
+});

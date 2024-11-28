@@ -1,6 +1,6 @@
 FROM alpine:edge
 RUN apk add --no-cache -X http://dl-cdn.alpinelinux.org/alpine/edge/testing \
-    erlang gleam rebar3 yarn
+    erlang gleam rebar3 yarn git
 COPY . /app
 WORKDIR /app/client
 RUN yarn install && yarn build

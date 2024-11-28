@@ -7,9 +7,6 @@ export default defineConfig({
   build: {
     outDir: "../../server/static/",
   },
-  define: {
-    GIT_COMMIT_HASH: JSON.stringify(process.env.GIT_COMMIT_HASH || 'dev'),
-  },
   server: {
     port: 9000,
     proxy: {

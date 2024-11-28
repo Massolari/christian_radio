@@ -14,7 +14,7 @@ pub fn get_song(station: StationName) -> Result(Song, String) {
     GospelMix -> get_gospel_mix()
     Melodia -> get_melodia()
     Radio93 ->
-      Ok(song.Song(title: "No song information available", artist: "Radio 93"))
+      Ok(song.Song(title: "Sem dados da música", artist: "Rádio 93 FM"))
   }
 }
 

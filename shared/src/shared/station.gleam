@@ -6,9 +6,16 @@ pub const list = [
   Station(
     name: GospelMix,
     display: Image(src: "/assets/station-gospel-mix.jpg"),
-  ), Station(name: ChristianHits, display: Label("Christian Hits .Net")),
-  Station(name: ChristianRock, display: Label("Christian Rock .Net")),
-  Station(name: Melodia, display: Label("Radio Melodia")),
+  ),
+  Station(
+    name: ChristianHits,
+    display: Image(src: "/assets/station-christian-hits.jpg"),
+  ),
+  Station(
+    name: ChristianRock,
+    display: Image(src: "/assets/station-christian-rock.jpg"),
+  ),
+  Station(name: Melodia, display: Image(src: "/assets/station-melodia.png")),
 ]
 
 const christian_hits_endpoint = "christianhits"

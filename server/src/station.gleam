@@ -4,7 +4,7 @@ import gleam/io
 import gleam/result
 import shared/song.{type Song}
 import shared/station.{
-  type StationName, ChristianHits, ChristianRock, GospelMix, Melodia,
+  type StationName, ChristianHits, ChristianRock, GospelMix, Melodia, Radio93,
 }
 
 pub fn get_song(station: StationName) -> Result(Song, String) {
@@ -13,6 +13,8 @@ pub fn get_song(station: StationName) -> Result(Song, String) {
     ChristianRock -> get_christian_rock()
     GospelMix -> get_gospel_mix()
     Melodia -> get_melodia()
+    Radio93 ->
+      Ok(song.Song(title: "No song information available", artist: "Radio 93"))
   }
 }
 

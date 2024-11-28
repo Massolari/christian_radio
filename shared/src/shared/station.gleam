@@ -1,6 +1,4 @@
-import gleam/list
-import gleam/pair
-import gleam/result
+import gleam/option.{type Option, None, Some}
 
 pub const list = [
   Station(
@@ -16,6 +14,7 @@ pub const list = [
     display: Image(src: "/assets/station-christian-rock.jpg"),
   ),
   Station(name: Melodia, display: Image(src: "/assets/station-melodia.png")),
+  Station(name: Radio93, display: Image(src: "/assets/station-radio-93.png")),
 ]
 
 const christian_hits_endpoint = "christianhits"
@@ -35,6 +34,7 @@ pub type StationName {
   ChristianRock
   GospelMix
   Melodia
+  Radio93
 }
 
 pub type StationDisplay {
@@ -47,16 +47,20 @@ pub fn stream_url(name: StationName) -> String {
     ChristianHits -> "https://listen.christianrock.net/stream/12/"
     ChristianRock -> "https://listen.christianrock.net/stream/11/"
     GospelMix -> "https://servidor33-3.brlogic.com:8192/live"
-    Melodia -> "https://26513.live.streamtheworld.com/MELODIAFMAAC.aac"
+    Melodia ->
+      "https://playerservices.streamtheworld.com/api/livestream-redirect/MELODIAFMAAC_SC"
+    Radio93 ->
+      "https://playerservices.streamtheworld.com/api/livestream-redirect/FM93AAC_SC"
   }
 }
 
-pub fn endpoint(name: StationName) -> String {
+pub fn endpoint(name: StationName) -> Option(String) {
   case name {
-    ChristianHits -> christian_hits_endpoint
-    ChristianRock -> christian_rock_endpoint
-    GospelMix -> gospel_mix_endpoint
-    Melodia -> melodia_endpoint
+    ChristianHits -> Some(christian_hits_endpoint)
+    ChristianRock -> Some(christian_rock_endpoint)
+    GospelMix -> Some(gospel_mix_endpoint)
+    Melodia -> Some(melodia_endpoint)
+    Radio93 -> None
   }
 }
 
@@ -66,6 +70,7 @@ pub fn to_string(name: StationName) -> String {
     ChristianRock -> "ChristianRock"
     GospelMix -> "GospelMix"
     Melodia -> "Melodia"
+    Radio93 -> "Radio93"
   }
 }
 
@@ -75,6 +80,7 @@ pub fn from_string(name: String) -> Result(StationName, Nil) {
     "ChristianRock" -> Ok(ChristianRock)
     "GospelMix" -> Ok(GospelMix)
     "Melodia" -> Ok(Melodia)
+    "Radio93" -> Ok(Radio93)
     _ -> Error(Nil)
   }
 }

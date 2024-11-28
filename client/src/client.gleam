@@ -362,7 +362,15 @@ fn view_station(
             [text(value)],
           )
         station.Image(_ as image_src) ->
-          div([card_classes], [img([class("rounded-lg"), src(image_src)])])
+          div(
+            [
+              card_classes,
+              class(
+                "bg-light-shades flex items-center text-center justify-center",
+              ),
+            ],
+            [img([class("rounded-lg"), src(image_src)])],
+          )
       },
     ],
   )

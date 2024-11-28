@@ -321,17 +321,14 @@ fn view_station(
     False -> "opacity-50 cursor-not-allowed"
   }
 
-  let card_classes =
-    class(
-      "w-36 h-36 md:w-48 md:h-48 rounded-lg active:scale-90 active:duration-100 hover:opacity-80 hover:duration-200 transition-all cursor-pointer "
-      <> selected_classes
-      <> " "
-      <> offline_classes,
-    )
-
   li(
     [
-      class("relative"),
+      class(
+        "active:scale-90 active:duration-100 hover:opacity-80 hover:duration-200 transition-all cursor-pointer",
+      ),
+      class("relative group"),
+      class(selected_classes),
+      class(offline_classes),
       case is_online {
         True -> event.on_click(SelectedStation(station.name))
         False -> attribute.none()
@@ -339,6 +336,15 @@ fn view_station(
     ],
     [
       case is_selected {
+        False ->
+          div(
+            [
+              class(
+                "absolute top-0 left-0 w-full h-full text-light-shades flex items-center justify-center opacity-0 group-hover:opacity-70 transition-opacity",
+              ),
+            ],
+            [icon.view([class("text-6xl")], icon.PlayArrow)],
+          )
         True ->
           div(
             [
@@ -348,30 +354,20 @@ fn view_station(
             ],
             [view_animated_equalizer(is_playing:)],
           )
-        False -> text("")
       },
-      case station.display {
-        station.Label(value) ->
-          div(
-            [
-              card_classes,
-              class(
-                "bg-light-shades text-xl flex items-center text-center justify-center",
-              ),
-            ],
-            [text(value)],
-          )
-        station.Image(_ as image_src) ->
-          div(
-            [
-              card_classes,
-              class(
-                "bg-light-shades flex items-center text-center justify-center",
-              ),
-            ],
-            [img([class("rounded-lg"), src(image_src)])],
-          )
-      },
+      div(
+        [
+          class(
+            "bg-light-shades text-xl flex items-center text-center justify-center w-36 h-36 md:w-48 md:h-48 rounded-lg",
+          ),
+        ],
+        case station.display {
+          station.Label(value) -> [text(value)]
+          station.Image(_ as image_src) -> [
+            img([class("rounded-lg"), src(image_src)]),
+          ]
+        },
+      ),
     ],
   )
 }

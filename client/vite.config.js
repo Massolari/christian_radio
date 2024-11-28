@@ -9,9 +9,7 @@ export default defineConfig({
     outDir: "../../server/static/",
   },
   define: {
-    GIT_COMMIT_HASH: JSON.stringify(
-      execSync("git rev-parse --short HEAD").toString().trim()
-    ),
+    GIT_COMMIT_HASH: JSON.stringify(process.env.GIT_COMMIT_HASH || 'dev'),
   },
   server: {
     port: 9000,

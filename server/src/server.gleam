@@ -1,6 +1,7 @@
 import client_manager.{type ClientManager}
 import gleam/bool
 import gleam/bytes_builder
+import gleam/erlang/os
 import gleam/erlang/process
 import gleam/function
 import gleam/http/request.{type Request}
@@ -15,6 +16,7 @@ import history_manager.{type HistoryManager}
 import mist.{type Connection, type ResponseData}
 import shared/station as shared_station
 import shared/websocket as shared_websocket
+import simplifile
 
 pub type Context {
   Context(priv_directory: String)
@@ -36,6 +38,7 @@ pub fn handle_request(
       })
       |> result.lazy_unwrap(response_not_found)
     ["ws"] -> handle_websocket(request, client_manager, history_manager)
+    ["sw.js"] -> handle_service_worker()
     path -> {
       let file_path = "static/" <> string.join(path, "/")
 
@@ -152,6 +155,26 @@ fn handle_websocket(
       }
     },
   )
+}
+
+fn handle_service_worker() -> Response(ResponseData) {
+  // Lê o arquivo sw.js e substitui GIT_COMMIT_HASH
+  simplifile.read("static/sw.js")
+  |> result.map(fn(content) {
+    let git_hash = os.get_env("GIT_COMMIT_HASH") |> result.unwrap("dev")
+    let new_content =
+      content
+      |> string.replace("GIT_COMMIT_HASH", "'" <> git_hash <> "'")
+
+    response.new(200)
+    |> response.prepend_header("content-type", "application/javascript")
+    |> response.set_body(
+      new_content
+      |> bytes_builder.from_string
+      |> mist.Bytes,
+    )
+  })
+  |> result.lazy_unwrap(response_not_found)
 }
 
 pub fn send_websocket_message(

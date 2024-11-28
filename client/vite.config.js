@@ -1,6 +1,5 @@
 import gleam from "vite-gleam";
 import { defineConfig } from "vite";
-import { execSync } from "child_process";
 
 export default defineConfig({
   root: "src",

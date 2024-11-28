@@ -1,9 +1,5 @@
 const CACHE_PREFIX = 'christian-radio-';
-const CACHE_NAME = CACHE_PREFIX + (typeof GIT_COMMIT_HASH !== 'undefined' ? GIT_COMMIT_HASH : 'dev');
-
-function generateCacheVersion(assets) {
-  return btoa(assets.join('|')).slice(0, 8);
-}
+const CACHE_NAME = CACHE_PREFIX + GIT_COMMIT_HASH;
 
 const ASSETS_TO_CACHE = [
   '/',

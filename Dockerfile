@@ -9,10 +9,9 @@ RUN apk add --no-cache -X http://dl-cdn.alpinelinux.org/alpine/edge/testing \
 COPY . /app
 WORKDIR /app/client
 
-# Passar o hash do commit como GIT_COMMIT_HASH para o Vite
-ENV GIT_COMMIT_HASH=${RENDER_GIT_COMMIT}
 RUN yarn install && yarn build
 
+ENV GIT_COMMIT_HASH=${RENDER_GIT_COMMIT}
 WORKDIR /app/server
 RUN gleam build
 ENTRYPOINT ["gleam"]

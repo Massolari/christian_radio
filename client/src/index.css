@@ -84,14 +84,14 @@
 }
 
 .equalizer.paused > .equalizer-bar:nth-child(1) {
-  animation: equalizer-pause-lower 1s;
+  animation: equalizer-pause-lower 1s forwards;
 }
 .equalizer.paused > .equalizer-bar:nth-child(2) {
-  animation: equalizer-pause-higher 1s;
+  animation: equalizer-pause-higher 1s forwards;
 }
 .equalizer.paused > .equalizer-bar:nth-child(3) {
-  animation: equalizer-pause-higher 1s;
+  animation: equalizer-pause-higher 1s forwards;
 }
 .equalizer.paused > .equalizer-bar:nth-child(4) {
-  animation: equalizer-pause-lower 1s;
+  animation: equalizer-pause-lower 1s forwards;
 }

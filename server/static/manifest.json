@@ -4,8 +4,8 @@
   "description": "Listen to Christian radio stations",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#677A98",
-  "theme_color": "#677A98",
+  "background_color": "#EFF1F4",
+  "theme_color": "#EFF1F4",
   "icons": [
     {
       "src": "/assets/icon-192x192.png",

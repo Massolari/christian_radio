@@ -140,7 +140,7 @@ pub fn view(
   div(
     [
       class(
-        "bg-dark-accent md:bg-inherit w-full pb-2 md:mb-2 px-1 md:px-2 h-20",
+        "bg-dark-accent dark:bg-dark-dark-accent md:bg-inherit w-full pb-2 md:mb-2 px-1 md:px-2 h-20",
       ),
     ],
     [
@@ -174,7 +174,7 @@ fn view_mobile(
   div(
     [
       class(
-        "relative w-full h-full bg-light-shades rounded-lg flex justify-between px-5 py-3 items-center",
+        "relative shadow-outer w-full h-full bg-light-shades rounded-lg flex justify-between px-5 py-3 items-center",
       ),
     ],
     [
@@ -204,7 +204,7 @@ fn view_desktop(
   div(
     [
       class(
-        "relative w-full h-full bg-light-shades rounded-lg grid grid-cols-[1fr_1fr_1fr] px-5 py-3 items-center",
+        "relative shadow-outer w-full h-full bg-light-shades rounded-lg grid grid-cols-[1fr_1fr_1fr] px-5 py-3 items-center",
       ),
     ],
     [
@@ -229,8 +229,10 @@ fn view_desktop(
 
 fn view_song(song: Song) -> Element(a) {
   div([class("flex flex-col gap-1")], [
-    span([class("text-dark-shades text-lg font-medium")], [text(song.title)]),
-    span([class("text-dark-accent text-sm italic")], [text(song.artist)]),
+    span([class("text-dark-dark-shades text-lg font-medium")], [
+      text(song.title),
+    ]),
+    span([class("text-dark-dark-accent text-sm italic")], [text(song.artist)]),
   ])
 }
 
@@ -306,10 +308,10 @@ fn view_volume(model: Model) -> Element(Msg) {
 fn view_offline(is_mobile: Bool) -> Element(Msg) {
   let content =
     div([class("flex flex-col gap-1 w-full")], [
-      span([class("text-dark-shades text-lg font-medium text-center")], [
+      span([class("text-dark-dark-shades text-lg font-medium text-center")], [
         text("Você está offline"),
       ]),
-      span([class("text-dark-accent text-sm italic text-center")], [
+      span([class("text-dark-dark-accent text-sm italic text-center")], [
         text("Verifique sua conexão com a internet"),
       ]),
     ])
@@ -319,7 +321,7 @@ fn view_offline(is_mobile: Bool) -> Element(Msg) {
       div(
         [
           class(
-            "relative w-full h-full bg-light-shades rounded-lg flex justify-between px-5 py-3 items-center",
+            "relative w-full h-full bg-dark-light-shades rounded-lg flex justify-between px-5 py-3 items-center",
           ),
         ],
         [content],
@@ -328,7 +330,7 @@ fn view_offline(is_mobile: Bool) -> Element(Msg) {
       div(
         [
           class(
-            "relative w-full h-full bg-light-shades rounded-lg grid grid-cols-[1fr_1fr_1fr] px-5 py-3 items-center",
+            "relative w-full h-full bg-dark-light-shades rounded-lg grid grid-cols-[1fr_1fr_1fr] px-5 py-3 items-center",
           ),
         ],
         [content],

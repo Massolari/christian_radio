@@ -210,21 +210,28 @@ fn handle_websocket_message(
 // View
 
 fn view(model: Model) -> Element(Msg) {
-  html.main([class("bg-main-brand flex flex-col flex-grow h-[100dvh]")], [
-    case model.is_mobile {
-      True -> view_mobile(model)
-      False -> view_desktop(model)
-    },
-    player.view(
-      player: model.player,
-      current_song: model.song,
-      station: model.station,
-      favorites: model.favorites,
-      is_mobile: model.is_mobile,
-      is_online: model.is_online,
-    )
-      |> element.map(PlayerMsg),
-  ])
+  html.main(
+    [
+      class(
+        "bg-main-brand dark:bg-dark-main-brand flex flex-col flex-grow h-[100dvh]",
+      ),
+    ],
+    [
+      case model.is_mobile {
+        True -> view_mobile(model)
+        False -> view_desktop(model)
+      },
+      player.view(
+        player: model.player,
+        current_song: model.song,
+        station: model.station,
+        favorites: model.favorites,
+        is_mobile: model.is_mobile,
+        is_online: model.is_online,
+      )
+        |> element.map(PlayerMsg),
+    ],
+  )
 }
 
 fn view_mobile(model: Model) -> Element(Msg) {
@@ -261,7 +268,7 @@ fn view_desktop_section(title: String, content: Element(Msg)) -> Element(Msg) {
   div(
     [
       class(
-        "flex flex-col bg-dark-accent rounded-lg text-light-shades overflow-y-auto",
+        "flex flex-col bg-dark-accent dark:bg-dark-dark-accent rounded-lg text-dark-shades dark:text-light-shades overflow-y-auto",
       ),
     ],
     [span([class("text-xl text-center p-2")], [text(title)]), content],
@@ -285,12 +292,13 @@ fn view_stations(
   is_playing: Bool,
 ) -> Element(Msg) {
   section([class("pl-3 flex flex-col gap-2 md:gap-3")], [
-    span([class("text-light-shades text-3xl md:text-center")], [
-      text("Estações"),
-    ]),
+    span(
+      [class("text-dark-shades dark:text-light-shades text-3xl md:text-center")],
+      [text("Estações")],
+    ),
     ul(
       [
-        class("flex gap-3 overflow-scroll md:flex-wrap pr-3"),
+        class("flex gap-3 p-3 overflow-scroll md:flex-wrap pr-3"),
         style([#("scrollbar-width", "none")]),
       ],
       list.map(station.list, view_station(
@@ -326,7 +334,7 @@ fn view_station(
       class(
         "active:scale-90 active:duration-100 hover:opacity-80 hover:duration-200 transition-all cursor-pointer",
       ),
-      class("relative group"),
+      class("relative group shadow-outer rounded-lg"),
       class(selected_classes),
       class(offline_classes),
       case is_online {
@@ -395,7 +403,7 @@ fn view_tabs(model: Model) -> Element(Msg) {
     div(
       [
         class(
-          "bg-dark-accent rounded-tl-[40px] text-light-accent rounded-tr-[40px] flex-1 overflow-hidden",
+          "bg-dark-accent dark:bg-dark-dark-accent rounded-tl-[40px] text-dark-shades dark:text-light-accent rounded-tr-[40px] flex-1 overflow-hidden",
         ),
       ],
       [
@@ -422,7 +430,7 @@ fn view_song_list_container(content: List(Element(Msg))) -> Element(Msg) {
   ul(
     [
       class(
-        "relative text-light-shades px-6 py-5 flex flex-col gap-3 overflow-y-auto h-full",
+        "relative text-dark-shades dark:text-light-shades px-6 py-5 flex flex-col gap-3 overflow-y-auto h-full",
       ),
     ],
     content,
@@ -486,7 +494,9 @@ fn view_song(
   div([class("flex justify-between items-center w-full")], [
     div([class("flex flex-col")], [
       span([class("text-lg")], [text(song.title)]),
-      span([class("text-sm italic  text-light-accent")], [text(song.artist)]),
+      span([class("text-sm italic text-dark-shades  dark:text-light-accent")], [
+        text(song.artist),
+      ]),
     ]),
     case icon {
       Some(SongIcon(icon, on_click)) ->
@@ -536,8 +546,11 @@ fn get_tab_classes(
   with current: Tab,
 ) -> attribute.Attribute(Msg) {
   case check == current {
-    True -> class("text-dark-shades bg-light-shades")
-    False -> class("text-light-shades bg-none")
+    True ->
+      class(
+        "text-dark-shades dark:text-dark-shades bg-dark-accent dark:bg-light-shades",
+      )
+    False -> class("text-dark-shades dark:text-light-shades bg-none")
   }
 }
 

@@ -16,11 +16,39 @@
   <link rel="apple-touch-icon" href="/assets/icon-192x192.png">
   <script type="module" src="./main.js" defer></script>
 </head>
+<style>
+  .splash-screen {
+    width: 100%;
+    height: 100vh;
+    background-color: #EFF1F4;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    img {
+      width: 100px;
+      height: auto;
+      border-radius: 10px;
+      animation: splash-pulse 1.25s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+      box-shadow: 0px 0px 4px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      background-color: #677A98;
+    }
+  }
+
+  @keyframes splash-pulse {
+    50% {
+      opacity: .5;
+    }
+  }
+</style>
 
 <body>
   <div id="app">
-    <div class="w-full h-screen flex justify-center items-center bg-main-brand">
-      <img src="/assets/icon-512x512.png" alt="Christian Radio" class="w-40 h-40 rounded-lg animate-pulse" style="animation-duration: 1.25s;">
+    <div class="splash-screen">
+      <img src="/assets/icon-512x512.png" alt="Christian Radio" />
     </div>
   </div>
 </body>

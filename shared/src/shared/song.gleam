@@ -2,6 +2,7 @@ import gleam/dynamic
 import gleam/int
 import gleam/json
 import gleam/list
+import gleam/pair
 import gleam/result
 import gleam/string
 
@@ -90,4 +91,28 @@ fn get_melodia_xml_data(
     string.split_once(from_title_chunk, "]]")
     |> result.map_error(error_mapper)
   })
+}
+
+pub fn gospel_adoracao_decoder(html: String) -> Result(Song, String) {
+  html
+  |> string.split_once("<b>Tocando agora:</b>")
+  |> result.map(pair.second)
+  |> result.then(string.split_once(_, "|"))
+  |> result.map(pair.first)
+  |> result.then(string.split_once(_, "\r\n"))
+  |> result.map(pair.first)
+  |> result.map(string.trim)
+  |> result.map(fn(song) {
+    case string.split_once(song, " - ") {
+      Ok(#(artist, title)) -> {
+        // The part which is uppercase is the song title, probably
+        case string.uppercase(artist) == artist {
+          True -> Song(artist: title, title: artist)
+          False -> Song(artist:, title:)
+        }
+      }
+      Error(_) -> Song(artist: "", title: song)
+    }
+  })
+  |> result.replace_error("Could not get song from HTML: " <> html)
 }

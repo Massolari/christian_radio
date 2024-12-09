@@ -6,6 +6,7 @@ const ASSETS_TO_CACHE = [
   '/index.html',
   '/manifest.json',
   '/assets/favicon.ico',
+  '/assets/station-gospel-adoracao.png',
   '/assets/station-gospel-mix.jpg',
   '/assets/station-christian-hits.jpg',
   '/assets/station-christian-rock.jpg',

@@ -4,7 +4,8 @@ import gleam/io
 import gleam/result
 import shared/song.{type Song}
 import shared/station.{
-  type StationName, ChristianHits, ChristianRock, GospelMix, Melodia, Radio93,
+  type StationName, ChristianHits, ChristianRock, GospelAdoracao, GospelMix,
+  Melodia, Radio93,
 }
 
 pub fn get_song(station: StationName) -> Result(Song, String) {
@@ -15,6 +16,7 @@ pub fn get_song(station: StationName) -> Result(Song, String) {
     Melodia -> get_melodia()
     Radio93 ->
       Ok(song.Song(title: "Sem dados da música", artist: "Rádio 93 FM"))
+    GospelAdoracao -> get_gospel_adoracao()
   }
 }
 
@@ -73,6 +75,23 @@ fn get_melodia() -> Result(Song, String) {
 
   response.body
   |> song.melodia_decoder
+  |> map_decoder_error
+}
+
+fn get_gospel_adoracao() -> Result(Song, String) {
+  let assert Ok(request) =
+    request.to(
+      "https://www.radiogospeladoracao.com/admin/includes/locutor/no-ar-player.php",
+    )
+
+  use response <- result.try(
+    request
+    |> httpc.send
+    |> map_httpc_error,
+  )
+
+  response.body
+  |> song.gospel_adoracao_decoder
   |> map_decoder_error
 }
 

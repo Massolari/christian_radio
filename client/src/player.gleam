@@ -154,13 +154,10 @@ pub fn view(
         ],
         [],
       ),
-      case is_online {
-        False -> view_offline(is_mobile)
-        True ->
-          case is_mobile {
-            True -> view_mobile(model, song, favorites)
-            False -> view_desktop(model, song, favorites)
-          }
+      case is_online, is_mobile {
+        False, _ -> view_offline()
+        True, True -> view_mobile(model, song, favorites)
+        True, False -> view_desktop(model, song, favorites)
       },
     ],
   )
@@ -305,35 +302,20 @@ fn view_volume(model: Model) -> Element(Msg) {
   ])
 }
 
-fn view_offline(is_mobile: Bool) -> Element(Msg) {
-  let content =
-    div([class("flex flex-col gap-1 w-full")], [
-      span([class("text-dark-dark-shades text-lg font-medium text-center")], [
-        text("Você está offline"),
+fn view_offline() -> Element(Msg) {
+  div(
+    [
+      class(
+        "relative shadow-outer w-full h-full bg-light-shades rounded-lg grid grid-cols-1 px-5 py-3 items-center",
+      ),
+    ],
+    [
+      div([class("flex flex-col gap-1 w-full text-center")], [
+        span([class("text-lg font-medium")], [text("Você está offline")]),
+        span([class("text-dark-dark-accent text-sm italic")], [
+          text("Verifique sua conexão com a internet"),
+        ]),
       ]),
-      span([class("text-dark-dark-accent text-sm italic text-center")], [
-        text("Verifique sua conexão com a internet"),
-      ]),
-    ])
-
-  case is_mobile {
-    True ->
-      div(
-        [
-          class(
-            "relative w-full h-full bg-dark-light-shades rounded-lg flex justify-between px-5 py-3 items-center",
-          ),
-        ],
-        [content],
-      )
-    False ->
-      div(
-        [
-          class(
-            "relative w-full h-full bg-dark-light-shades rounded-lg grid grid-cols-[1fr_1fr_1fr] px-5 py-3 items-center",
-          ),
-        ],
-        [content],
-      )
-  }
+    ],
+  )
 }

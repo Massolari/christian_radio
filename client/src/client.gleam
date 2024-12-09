@@ -45,7 +45,7 @@ type Tab {
 }
 
 type Init {
-  Init(favorites: List(Song), is_mobile: Bool)
+  Init(favorites: List(Song), is_mobile: Bool, is_online: Bool)
 }
 
 fn init(init: Init) -> #(Model, effect.Effect(Msg)) {
@@ -59,7 +59,7 @@ fn init(init: Init) -> #(Model, effect.Effect(Msg)) {
       history: [],
       favorites: init.favorites,
       is_mobile: init.is_mobile,
-      is_online: True,
+      is_online: init.is_online,
     ),
     effect.batch([
       lustre_websocket.init("/ws", WebSocketEvent),
@@ -85,7 +85,6 @@ type Msg {
 fn update(model: Model, msg: Msg) -> #(Model, effect.Effect(Msg)) {
   case msg {
     WindowResized(is_mobile) -> {
-      io.debug(is_mobile)
       #(Model(..model, is_mobile:), effect.none())
     }
 
@@ -170,7 +169,7 @@ fn update(model: Model, msg: Msg) -> #(Model, effect.Effect(Msg)) {
     }
 
     OnlineStatusChanged(is_online) -> {
-      #(Model(..model, is_online: is_online), effect.none())
+      #(Model(..model, is_online:), effect.none())
     }
   }
 }
@@ -609,6 +608,9 @@ fn watch_online_status() -> Effect(Msg) {
   })
 }
 
+@external(javascript, "./ffi.mjs", "isOnline")
+fn is_online() -> Bool
+
 // Main
 
 pub fn main() {
@@ -630,9 +632,12 @@ pub fn main() {
     |> result.unwrap([])
 
   let app = lustre.application(init, update, view)
-
   let assert Ok(_) =
-    lustre.start(app, "#app", Init(favorites:, is_mobile: this_is_mobile))
+    lustre.start(
+      app,
+      "#app",
+      Init(favorites:, is_mobile: this_is_mobile, is_online: is_online()),
+    )
 
   Nil
 }

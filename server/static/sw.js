@@ -14,6 +14,8 @@ const ASSETS_TO_CACHE = [
   '/assets/station-radio-93.png',
 ];
 
+const VITE_ASSETS_PATTERN = /\/assets\/index-[a-zA-Z0-9]+\.(js|css)$/;
+
 // Instalação do Service Worker
 self.addEventListener('install', (event) => {
   event.waitUntil(
@@ -47,9 +49,27 @@ self.addEventListener('activate', (event) => {
 // Interceptação de requisições
 self.addEventListener('fetch', (event) => {
   event.respondWith(
-    caches.match(event.request).then((response) =>
-      // Retorna do cache se encontrar, senão faz a requisição
-      response || fetch(event.request)
-    )
+    caches.match(event.request).then((response) => {
+      if (response) {
+        return response;
+      }
+
+      return fetch(event.request).then((response) => {
+        // Verifica se é uma resposta válida
+        if (!response || response.status !== 200 || response.type !== 'basic') {
+          return response;
+        }
+
+        // Verifica se é um arquivo index.js ou index.css do Vite
+        if (VITE_ASSETS_PATTERN.test(event.request.url)) {
+          const responseToCache = response.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, responseToCache);
+          });
+        }
+
+        return response;
+      });
+    })
   );
 }); 

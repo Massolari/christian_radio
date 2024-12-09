@@ -14,7 +14,7 @@ const ASSETS_TO_CACHE = [
   '/assets/station-radio-93.png',
 ];
 
-const VITE_ASSETS_PATTERN = /\/assets\/index-[a-zA-Z0-9]+\.(js|css)$/;
+const VITE_ASSETS_PATTERN = /\/assets\/index-.+\.(js|css)$/;
 
 // Instalação do Service Worker
 self.addEventListener('install', (event) => {

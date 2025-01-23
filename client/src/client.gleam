@@ -1,5 +1,4 @@
 import gleam/dynamic
-import gleam/io
 import gleam/json
 import gleam/list
 import gleam/option.{type Option, None, Some}

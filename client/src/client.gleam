@@ -1,3 +1,4 @@
+import connection_status
 import gleam/dynamic
 import gleam/json
 import gleam/list
@@ -224,8 +225,8 @@ fn view(model: Model) -> Element(Msg) {
         current_song: model.song,
         station: model.station,
         favorites: model.favorites,
+        connection_status: get_connection_status(model),
         is_mobile: model.is_mobile,
-        is_online: model.is_online,
       )
         |> element.map(PlayerMsg),
     ],
@@ -235,9 +236,9 @@ fn view(model: Model) -> Element(Msg) {
 fn view_mobile(model: Model) -> Element(Msg) {
   div([class("flex flex-col gap-8 pt-6 overflow-hidden flex-grow")], [
     view_stations(
-      model.station,
-      model.is_online,
-      player.is_playing(model.player),
+      current: model.station,
+      is_online: get_connection_status(model) == connection_status.Online,
+      is_playing: player.is_playing(model.player),
     ),
     view_tabs(model),
   ])
@@ -253,9 +254,9 @@ fn view_desktop(model: Model) -> Element(Msg) {
     [
       view_desktop_history(model.history, model.favorites),
       view_stations(
-        model.station,
-        model.is_online,
-        player.is_playing(model.player),
+        current: model.station,
+        is_online: get_connection_status(model) == connection_status.Online,
+        is_playing: player.is_playing(model.player),
       ),
       view_desktop_favorites(model.favorites),
     ],
@@ -285,9 +286,9 @@ fn view_desktop_favorites(favorites: List(Song)) -> Element(Msg) {
 }
 
 fn view_stations(
-  current_station: Option(station.StationName),
-  is_online: Bool,
-  is_playing: Bool,
+  current current_station: Option(station.StationName),
+  is_online is_online: Bool,
+  is_playing is_playing: Bool,
 ) -> Element(Msg) {
   section([class("pl-3 flex flex-col gap-2 md:gap-3")], [
     span(
@@ -605,6 +606,14 @@ fn watch_online_status() -> Effect(Msg) {
     dispatch(OnlineStatusChanged(False))
     Nil
   })
+}
+
+fn get_connection_status(model: Model) -> connection_status.ConnectionStatus {
+  case model.is_online, model.websocket {
+    False, _ -> connection_status.Offline
+    True, None -> connection_status.ServerOffline
+    True, Some(_) -> connection_status.Online
+  }
 }
 
 @external(javascript, "./ffi.mjs", "isOnline")

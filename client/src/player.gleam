@@ -1,3 +1,4 @@
+import connection_status.{type ConnectionStatus}
 import gleam/float
 import gleam/int
 import gleam/list
@@ -130,7 +131,7 @@ pub fn view(
   station station: Option(station.StationName),
   favorites favorites: List(Song),
   is_mobile is_mobile: Bool,
-  is_online is_online: Bool,
+  connection_status connection_status: ConnectionStatus,
 ) -> Element(Msg) {
   let stream =
     station
@@ -154,10 +155,11 @@ pub fn view(
         ],
         [],
       ),
-      case is_online, is_mobile {
-        False, _ -> view_offline()
-        True, True -> view_mobile(model, song, favorites)
-        True, False -> view_desktop(model, song, favorites)
+      case connection_status, is_mobile {
+        connection_status.Offline, _ -> view_offline()
+        connection_status.ServerOffline, _ -> view_server_offline()
+        connection_status.Online, True -> view_mobile(model, song, favorites)
+        connection_status.Online, False -> view_desktop(model, song, favorites)
       },
     ],
   )
@@ -303,6 +305,17 @@ fn view_volume(model: Model) -> Element(Msg) {
 }
 
 fn view_offline() -> Element(Msg) {
+  view_not_connected(
+    "Você está offline",
+    "Verifique sua conexão com a internet",
+  )
+}
+
+fn view_server_offline() -> Element(Msg) {
+  view_not_connected("Por favor, aguarde", "Conectando ao servidor...")
+}
+
+fn view_not_connected(title: String, message: String) -> Element(Msg) {
   div(
     [
       class(
@@ -311,10 +324,8 @@ fn view_offline() -> Element(Msg) {
     ],
     [
       div([class("flex flex-col gap-1 w-full text-center")], [
-        span([class("text-lg font-medium")], [text("Você está offline")]),
-        span([class("text-dark-dark-accent text-sm italic")], [
-          text("Verifique sua conexão com a internet"),
-        ]),
+        span([class("text-lg font-medium")], [text(title)]),
+        span([class("text-dark-dark-accent text-sm italic")], [text(message)]),
       ]),
     ],
   )

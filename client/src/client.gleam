@@ -614,15 +614,13 @@ fn is_online() -> Bool
 // Main
 
 pub fn main() {
-  let this_window = window.self()
   let this_is_mobile =
-    this_window
+    window.self()
     |> window.inner_width
     |> is_mobile
 
-  let local_storage = storage.local()
   let favorites =
-    local_storage
+    storage.local()
     |> result.try(storage.get_item(_, "favorites"))
     |> result.try(fn(value) {
       value

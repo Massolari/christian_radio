@@ -1,14 +1,14 @@
 serve:
 	make -j 2 server client
 client:
-	cd client && yarn dev
+	cd client && pnpm run dev
 server:
 	cd server && gleam run
 
 build:
 	make -j 2 build-server build-client
 build-client:
-	cd client && yarn build
+	cd client && pnpm run build
 build-server:
 	cd server && gleam build
 

@@ -4,12 +4,12 @@ FROM alpine:edge
 ARG RENDER_GIT_COMMIT=dev
 
 RUN apk add --no-cache -X http://dl-cdn.alpinelinux.org/alpine/edge/testing \
-    erlang gleam rebar3 yarn git
+    erlang gleam rebar3 pnpm git
 
 COPY . /app
 WORKDIR /app/client
 
-RUN yarn install && yarn build
+RUN pnpm install && pnpm run build
 
 ENV GIT_COMMIT_HASH=${RENDER_GIT_COMMIT}
 WORKDIR /app/server

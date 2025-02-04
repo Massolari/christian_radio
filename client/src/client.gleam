@@ -89,11 +89,14 @@ fn update(model: Model, msg: Msg) -> #(Model, effect.Effect(Msg)) {
     }
 
     WebSocketEvent(lustre_websocket.OnOpen(ws)) -> {
-      let effect = case model.station {
-        Some(station) -> lustre_websocket.send(ws, station.to_string(station))
-        None -> effect.none()
+      let #(song, effect) = case model.station {
+        Some(station) -> #(
+          rd.Loading,
+          lustre_websocket.send(ws, station.to_string(station)),
+        )
+        None -> #(rd.NotAsked, effect.none())
       }
-      #(Model(..model, websocket: Some(ws)), effect)
+      #(Model(..model, websocket: Some(ws), song:), effect)
     }
 
     WebSocketEvent(lustre_websocket.OnTextMessage(text)) ->
@@ -119,16 +122,17 @@ fn update(model: Model, msg: Msg) -> #(Model, effect.Effect(Msg)) {
 
     SelectedStation(station) -> {
       let #(player, player_effect, _) = player.play(model.player)
+      let new_model = Model(..model, player:, station: Some(station))
 
       case model.websocket {
         Some(ws) -> #(
-          Model(..model, player:, station: Some(station), song: rd.Loading),
+          new_model,
           effect.batch([
             lustre_websocket.send(ws, station.to_string(station)),
             player_effect |> effect.map(PlayerMsg),
           ]),
         )
-        None -> #(model, effect.none())
+        None -> #(new_model, player_effect |> effect.map(PlayerMsg))
       }
     }
 
@@ -237,7 +241,7 @@ fn view_mobile(model: Model) -> Element(Msg) {
   div([class("flex flex-col gap-8 pt-6 overflow-hidden flex-grow")], [
     view_stations(
       current: model.station,
-      is_online: get_connection_status(model) == connection_status.Online,
+      is_online: get_connection_status(model) != connection_status.Offline,
       is_playing: player.is_playing(model.player),
     ),
     view_tabs(model),
@@ -255,7 +259,7 @@ fn view_desktop(model: Model) -> Element(Msg) {
       view_desktop_history(model.history, model.favorites),
       view_stations(
         current: model.station,
-        is_online: get_connection_status(model) == connection_status.Online,
+        is_online: get_connection_status(model) != connection_status.Offline,
         is_playing: player.is_playing(model.player),
       ),
       view_desktop_favorites(model.favorites),

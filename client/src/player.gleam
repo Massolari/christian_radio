@@ -155,11 +155,25 @@ pub fn view(
         ],
         [],
       ),
-      case connection_status, is_mobile {
-        connection_status.Offline, _ -> view_offline()
-        connection_status.ServerOffline, _ -> view_server_offline()
-        connection_status.Online, True -> view_mobile(model, song, favorites)
-        connection_status.Online, False -> view_desktop(model, song, favorites)
+      case connection_status {
+        connection_status.Offline -> view_offline()
+        status -> {
+          let #(song, show_favorite_button) = case status {
+            connection_status.ServerOffline -> #(
+              rd.Success(Song(
+                title: "Por favor, aguarde",
+                artist: "Conectando ao servidor...",
+              )),
+              False,
+            )
+            _ -> #(song, True)
+          }
+
+          case is_mobile {
+            True -> view_mobile(model, song, favorites, show_favorite_button)
+            False -> view_desktop(model, song, favorites, show_favorite_button)
+          }
+        }
       },
     ],
   )
@@ -169,6 +183,7 @@ fn view_mobile(
   model: Model,
   song: rd.RemoteData(Song, http.HttpError),
   favorites: List(Song),
+  show_favorite_button: Bool,
 ) -> Element(Msg) {
   div(
     [
@@ -188,7 +203,10 @@ fn view_mobile(
           ))
       },
       div([class("flex")], [
-        view_favorite_button(song, favorites),
+        case show_favorite_button {
+          True -> view_favorite_button(song, favorites)
+          False -> element.none()
+        },
         view_play_button(model),
       ]),
     ],
@@ -199,6 +217,7 @@ fn view_desktop(
   model: Model,
   song: rd.RemoteData(Song, http.HttpError),
   favorites: List(Song),
+  show_favorite_button: Bool,
 ) -> Element(Msg) {
   div(
     [
@@ -218,7 +237,10 @@ fn view_desktop(
               artist: string.inspect(error),
             ))
         },
-        view_favorite_button(song, favorites),
+        case show_favorite_button {
+          True -> view_favorite_button(song, favorites)
+          False -> element.none()
+        },
       ]),
       view_play_button(model),
       view_volume(model),

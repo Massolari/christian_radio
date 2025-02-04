@@ -333,10 +333,6 @@ fn view_offline() -> Element(Msg) {
   )
 }
 
-fn view_server_offline() -> Element(Msg) {
-  view_not_connected("Por favor, aguarde", "Conectando ao servidor...")
-}
-
 fn view_not_connected(title: String, message: String) -> Element(Msg) {
   div(
     [

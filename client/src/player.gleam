@@ -267,7 +267,7 @@ fn view_favorite_button(
         [class("group"), util.hover_classes(), event.on_click(ClickedFavorite)],
         [
           icon.favorite(list.contains(favorites, song), [
-            class("text-3xl"),
+            class("text-3xl!"),
             util.group_active_classes(),
           ]),
         ],
@@ -289,7 +289,12 @@ fn view_play_button(model: Model) -> Element(Msg) {
         event.on_click(click_msg),
         util.hover_classes(),
       ],
-      [icon.view([class("text-4xl"), util.group_active_classes()], button_icon)],
+      [
+        icon.view(
+          [class("text-4xl!"), util.group_active_classes()],
+          button_icon,
+        ),
+      ],
     ),
   ])
 }
@@ -309,7 +314,7 @@ fn view_volume(model: Model) -> Element(Msg) {
       ],
       [
         icon.view(
-          [class("text-4xl cursor-pointer"), util.group_active_classes()],
+          [class("text-4xl! cursor-pointer"), util.group_active_classes()],
           volume_icon,
         ),
       ],

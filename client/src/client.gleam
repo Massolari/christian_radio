@@ -354,7 +354,7 @@ fn view_station(
                 "absolute top-0 left-0 w-full h-full text-light-shades flex items-center justify-center opacity-0 group-hover:opacity-70 transition-opacity",
               ),
             ],
-            [icon.view([class("text-6xl")], icon.PlayArrow)],
+            [icon.view([class("text-6xl!")], icon.PlayArrow)],
           )
         True ->
           div(
@@ -464,7 +464,7 @@ fn view_message(icon: icon.Icon, message: String) -> Element(Msg) {
         "w-full h-full flex flex-col text-center items-center justify-center gap-5 cursor-default",
       ),
     ],
-    [icon.view([class("text-5xl")], icon), span([], [text(message)])],
+    [icon.view([class("text-5xl!")], icon), span([], [text(message)])],
   )
 }
 
@@ -516,7 +516,7 @@ fn view_song(
           ],
           [
             icon.favorite(is_favorite, [
-              class("text-3xl"),
+              class("text-3xl!"),
               util.group_active_classes(),
             ]),
           ],

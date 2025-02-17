@@ -1,4 +1,4 @@
-import gleam/dynamic
+import gleam/dynamic/decode
 import gleam/json
 import gleam/result
 import shared/song
@@ -21,20 +21,17 @@ pub fn encode(msg: WebSocketMessage) -> json.Json {
 }
 
 pub fn decode(json: String) -> Result(WebSocketMessage, String) {
-  let type_ = json.decode(json, dynamic.field("type", of: dynamic.string))
+  let type_ = json.parse(json, decode.at(["type"], decode.string))
 
   case type_ {
     Ok("song") ->
       json
-      |> json.decode(dynamic.field("song", of: song.decode()))
+      |> json.parse(decode.at(["song"], song.decoder()))
       |> result.replace_error(json)
       |> result.map(Song)
     Ok("history") ->
       json
-      |> json.decode(dynamic.field(
-        "history",
-        of: dynamic.list(of: song.decode()),
-      ))
+      |> json.parse(decode.at(["history"], decode.list(song.decoder())))
       |> result.replace_error(json)
       |> result.map(History)
     _ -> Error(json)

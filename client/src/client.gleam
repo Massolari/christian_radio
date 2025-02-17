@@ -1,5 +1,5 @@
 import connection_status
-import gleam/dynamic
+import gleam/dynamic/decode
 import gleam/json
 import gleam/list
 import gleam/option.{type Option, None, Some}
@@ -11,13 +11,13 @@ import lustre/effect.{type Effect}
 import lustre/element.{type Element, text}
 import lustre/element/html.{button, div, img, li, nav, section, span, ul}
 import lustre/event
-import lustre_http as http
 import lustre_websocket
 import player
 import plinth/browser/window
 import plinth/javascript/global
 import plinth/javascript/storage
 import remote_data as rd
+import rsvp
 import shared/song.{type Song, Song}
 import shared/station.{type Station}
 import shared/websocket as shared_websocket
@@ -31,7 +31,7 @@ type Model {
     station: Option(station.StationName),
     player: player.Model,
     tab: Tab,
-    song: rd.RemoteData(Song, http.HttpError),
+    song: rd.RemoteData(Song, rsvp.Error),
     history: List(Song),
     favorites: List(Song),
     is_mobile: Bool,
@@ -196,7 +196,7 @@ fn handle_websocket_message(
         Model(
           ..model,
           song: rd.Success(song),
-          history: list.concat([last_song, model.history]),
+          history: list.flatten([last_song, model.history]),
         ),
         effect.none(),
       )
@@ -635,10 +635,10 @@ pub fn main() {
   let favorites =
     storage.local()
     |> result.try(storage.get_item(_, "favorites"))
-    |> result.try(fn(value) {
+    |> result.map(fn(value) {
       value
-      |> json.decode(dynamic.list(song.decode()))
-      |> result.nil_error
+      |> json.parse(decode.list(song.decoder()))
+      |> result.unwrap([])
     })
     |> result.unwrap([])
 

@@ -1,7 +1,7 @@
 import client_manager.{type ClientManager}
+import envoy
 import gleam/bool
-import gleam/bytes_builder
-import gleam/erlang/os
+import gleam/bytes_tree
 import gleam/erlang/process
 import gleam/function
 import gleam/http/request.{type Request}
@@ -56,7 +56,7 @@ pub fn handle_request(
 
 fn response_not_found() -> Response(ResponseData) {
   response.new(404)
-  |> response.set_body(mist.Bytes(bytes_builder.new()))
+  |> response.set_body(mist.Bytes(bytes_tree.new()))
 }
 
 fn guess_content_type(path: String) -> String {
@@ -109,7 +109,7 @@ fn handle_websocket(
               let _ =
                 history_manager
                 |> history_manager.get_history(station)
-                |> result.nil_error
+                |> result.replace_error(Nil)
                 |> result.try(fn(history) {
                   io.println("Got history")
 
@@ -119,7 +119,7 @@ fn handle_websocket(
 
                       history_manager
                       |> history_manager.get_song(station)
-                      |> result.nil_error
+                      |> result.replace_error(Nil)
                       |> result.try(fn(song) {
                         io.println("Got last song: " <> song.title)
 
@@ -127,7 +127,7 @@ fn handle_websocket(
                           shared_websocket.History([song]),
                           state,
                         )
-                        |> result.nil_error
+                        |> result.replace_error(Nil)
                       })
                     }
 
@@ -136,7 +136,7 @@ fn handle_websocket(
                         shared_websocket.History(history),
                         state,
                       )
-                      |> result.nil_error
+                      |> result.replace_error(Nil)
                   }
                 })
 
@@ -161,7 +161,7 @@ fn handle_service_worker() -> Response(ResponseData) {
   // Lê o arquivo sw.js e substitui GIT_COMMIT_HASH
   simplifile.read("static/sw.js")
   |> result.map(fn(content) {
-    let git_hash = os.get_env("GIT_COMMIT_HASH") |> result.unwrap("dev")
+    let git_hash = envoy.get("GIT_COMMIT_HASH") |> result.unwrap("dev")
     let new_content =
       content
       |> string.replace("GIT_COMMIT_HASH", "'" <> git_hash <> "'")
@@ -170,7 +170,7 @@ fn handle_service_worker() -> Response(ResponseData) {
     |> response.prepend_header("content-type", "application/javascript")
     |> response.set_body(
       new_content
-      |> bytes_builder.from_string
+      |> bytes_tree.from_string
       |> mist.Bytes,
     )
   })

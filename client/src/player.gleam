@@ -11,11 +11,11 @@ import lustre/effect.{type Effect}
 import lustre/element.{type Element, text}
 import lustre/element/html.{audio, button, div, input, span}
 import lustre/event
-import lustre_http as http
 import plinth/browser/document
 import plinth/browser/element as browser_element
 import plinth/browser/window
 import remote_data as rd
+import rsvp
 import shared/song.{type Song, Song}
 import shared/station
 import util
@@ -127,7 +127,7 @@ pub fn is_playing(model: Model) -> Bool {
 
 pub fn view(
   player model: Model,
-  current_song song: rd.RemoteData(Song, http.HttpError),
+  current_song song: rd.RemoteData(Song, rsvp.Error),
   station station: Option(station.StationName),
   favorites favorites: List(Song),
   is_mobile is_mobile: Bool,
@@ -181,7 +181,7 @@ pub fn view(
 
 fn view_mobile(
   model: Model,
-  song: rd.RemoteData(Song, http.HttpError),
+  song: rd.RemoteData(Song, rsvp.Error),
   favorites: List(Song),
   show_favorite_button: Bool,
 ) -> Element(Msg) {
@@ -215,7 +215,7 @@ fn view_mobile(
 
 fn view_desktop(
   model: Model,
-  song: rd.RemoteData(Song, http.HttpError),
+  song: rd.RemoteData(Song, rsvp.Error),
   favorites: List(Song),
   show_favorite_button: Bool,
 ) -> Element(Msg) {
@@ -258,7 +258,7 @@ fn view_song(song: Song) -> Element(a) {
 }
 
 fn view_favorite_button(
-  song: rd.RemoteData(Song, http.HttpError),
+  song: rd.RemoteData(Song, rsvp.Error),
   favorites: List(Song),
 ) -> Element(Msg) {
   case song {

@@ -511,6 +511,7 @@ fn view_song(
         button(
           [
             class("group"),
+            class("cursor-pointer"),
             util.hover_classes(),
             event.on_click(ClickedFavorite(song)),
           ],

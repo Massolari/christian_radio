@@ -264,7 +264,12 @@ fn view_favorite_button(
   case song {
     rd.Success(song) ->
       button(
-        [class("group"), util.hover_classes(), event.on_click(ClickedFavorite)],
+        [
+          class("group"),
+          class("cursor-pointer"),
+          util.hover_classes(),
+          event.on_click(ClickedFavorite),
+        ],
         [
           icon.favorite(list.contains(favorites, song), [
             class("text-3xl!"),
@@ -285,7 +290,9 @@ fn view_play_button(model: Model) -> Element(Msg) {
   div([class("w-full")], [
     button(
       [
-        class("group flex mx-auto md:justify-center items-center w-fit gap-2"),
+        class(
+          "group cursor-pointer flex mx-auto md:justify-center items-center w-fit gap-2",
+        ),
         event.on_click(click_msg),
         util.hover_classes(),
       ],

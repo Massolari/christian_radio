@@ -1,10 +1,10 @@
-FROM alpine:edge
+FROM erlang:27-alpine
 
 # Usar o RENDER_GIT_COMMIT que é fornecido automaticamente pelo Render
 ARG RENDER_GIT_COMMIT=dev
 
 RUN apk add --no-cache -X http://dl-cdn.alpinelinux.org/alpine/edge/testing \
-    erlang gleam rebar3 pnpm git
+    gleam rebar3 pnpm git
 
 COPY . /app
 WORKDIR /app/client

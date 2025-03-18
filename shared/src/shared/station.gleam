@@ -53,7 +53,7 @@ pub fn stream_url(name: StationName) -> String {
   case name {
     ChristianHits -> "https://listen.christianrock.net/stream/12/"
     ChristianRock -> "https://listen.christianrock.net/stream/11/"
-    GospelMix -> "https://servidor33-3.brlogic.com:8192/live"
+    GospelMix -> "https://servidor23-3.brlogic.com:7108/live"
     Melodia ->
       "https://playerservices.streamtheworld.com/api/livestream-redirect/MELODIAFMAAC_SC"
     Radio93 ->

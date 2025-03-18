@@ -42,7 +42,7 @@ pub fn christianhits_decoder(json: String) -> Result(Song, json.DecodeError) {
 }
 
 pub fn gospel_mix_decoder(json: String) -> Result(Song, json.DecodeError) {
-  let decoder = {
+  let string_decoder = {
     use track <- decode.field("currentTrack", decode.string)
 
     let splitted =
@@ -65,6 +65,14 @@ pub fn gospel_mix_decoder(json: String) -> Result(Song, json.DecodeError) {
     }
     |> decode.success
   }
+
+  let bool_decoder = {
+    use _ <- decode.field("currentTrack", decode.bool)
+
+    decode.success(unknown_song)
+  }
+
+  let decoder = decode.one_of(string_decoder, [bool_decoder])
 
   json.parse(json, decoder)
 }

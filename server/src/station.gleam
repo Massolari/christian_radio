@@ -45,7 +45,7 @@ fn get_christianrock_radio_song(radio: String) -> Result(Song, String) {
 fn get_gospel_mix() -> Result(Song, String) {
   let assert Ok(request) =
     request.to(
-      "https://d36nr0u3xmc4mm.cloudfront.net/index.php/api/streaming/status/8192/2e1cbe43529055ddda74868d2db9ae98/SV4BR",
+      "https://d36nr0u3xmc4mm.cloudfront.net/index.php/api/streaming/status/7108/71903e44e2b47a851a09ec0fee6a984f/SV19BR",
     )
 
   // Send the HTTP request to the server

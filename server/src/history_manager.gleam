@@ -49,7 +49,7 @@ pub fn new(
           let song =
             station
             |> station.get_song
-            |> result.unwrap(song.Song(title: "Unknown", artist: "Unknown"))
+            |> result.unwrap(song.unknown_song)
 
           process.send(subject, song)
 

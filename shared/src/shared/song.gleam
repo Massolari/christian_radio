@@ -10,6 +10,8 @@ pub type Song {
   Song(artist: String, title: String)
 }
 
+pub const unknown_song = Song(artist: "Desconhecido", title: "Desconhecido")
+
 pub fn encode(song: Song) -> json.Json {
   json.object([
     #("artist", json.string(song.artist)),

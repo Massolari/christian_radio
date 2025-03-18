@@ -162,14 +162,12 @@ fn handle_service_worker() -> Response(ResponseData) {
   simplifile.read("static/sw.js")
   |> result.map(fn(content) {
     let git_hash = envoy.get("GIT_COMMIT_HASH") |> result.unwrap("dev")
-    let new_content =
-      content
-      |> string.replace("GIT_COMMIT_HASH", "'" <> git_hash <> "'")
 
     response.new(200)
     |> response.prepend_header("content-type", "application/javascript")
     |> response.set_body(
-      new_content
+      content
+      |> string.replace("GIT_COMMIT_HASH", "'" <> git_hash <> "'")
       |> bytes_tree.from_string
       |> mist.Bytes,
     )

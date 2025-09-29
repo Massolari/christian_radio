@@ -13,6 +13,8 @@ import lustre/element/html.{button, div, img, li, nav, section, span, ul}
 import lustre/event
 import lustre_websocket
 import player
+import plinth/browser/document
+import plinth/browser/element as browser_element
 import plinth/browser/window
 import plinth/javascript/global
 import plinth/javascript/storage
@@ -649,6 +651,10 @@ pub fn main() {
       "#app",
       Init(favorites:, is_mobile: this_is_mobile, is_online: is_online()),
     )
+
+  let _ =
+    document.get_element_by_id("splash-screen")
+    |> result.map(fn(el) { browser_element.remove(el) })
 
   Nil
 }

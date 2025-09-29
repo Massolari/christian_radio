@@ -18,7 +18,7 @@ import plinth/javascript/global
 import plinth/javascript/storage
 import remote_data as rd
 import rsvp
-import shared/song.{type Song, Song}
+import shared/song.{type Song}
 import shared/station.{type Station}
 import shared/websocket as shared_websocket
 import util
@@ -375,7 +375,7 @@ fn view_station(
         case station.display {
           station.Label(value) -> [text(value)]
           station.Image(_ as image_src) -> [
-            img([class("rounded-lg"), src(image_src)]),
+            img([class("rounded-lg object-cover h-full"), src(image_src)]),
           ]
         },
       ),

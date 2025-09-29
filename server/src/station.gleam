@@ -4,7 +4,7 @@ import gleam/io
 import gleam/result
 import shared/song.{type Song}
 import shared/station.{
-  type StationName, ChristianHits, ChristianRock, GospelAdoracao, GospelMix,
+  type StationName, ChristianHits, ChristianRock, GospelAdoracao, GospelHits,
   Melodia, Radio93,
 }
 
@@ -12,7 +12,8 @@ pub fn get_song(station: StationName) -> Result(Song, String) {
   case station {
     ChristianHits -> get_christian_hits()
     ChristianRock -> get_christian_rock()
-    GospelMix -> get_gospel_mix()
+    GospelHits ->
+      Ok(song.Song(title: "Sem dados da música", artist: "Gospel Hits"))
     Melodia -> get_melodia()
     Radio93 ->
       Ok(song.Song(title: "Sem dados da música", artist: "Rádio 93 FM"))
@@ -39,24 +40,6 @@ fn get_christianrock_radio_song(radio: String) -> Result(Song, String) {
 
   response.body
   |> song.christianrock_decoder
-  |> map_decoder_error
-}
-
-fn get_gospel_mix() -> Result(Song, String) {
-  let assert Ok(request) =
-    request.to(
-      "https://d36nr0u3xmc4mm.cloudfront.net/index.php/api/streaming/status/7108/71903e44e2b47a851a09ec0fee6a984f/SV19BR",
-    )
-
-  // Send the HTTP request to the server
-  use response <- result.try(
-    request
-    |> httpc.send
-    |> map_httpc_error,
-  )
-
-  response.body
-  |> song.gospel_mix_decoder
   |> map_decoder_error
 }
 

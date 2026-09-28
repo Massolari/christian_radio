@@ -165,6 +165,7 @@ fn handle_service_worker() -> Response(ResponseData) {
 
     response.new(200)
     |> response.prepend_header("content-type", "application/javascript")
+    |> response.prepend_header("cache-control", "no-cache")
     |> response.set_body(
       content
       |> string.replace("GIT_COMMIT_HASH", "'" <> git_hash <> "'")

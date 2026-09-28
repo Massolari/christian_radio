@@ -14,9 +14,17 @@ window.onload = function () {
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
     navigator.serviceWorker
-      .register("/sw.js")
-      .then((_registration) => {
+      .register("/sw.js", { updateViaCache: "none" })
+      .then((registration) => {
         console.log("ServiceWorker registration successful");
+
+        // Verifica se há uma versão nova sempre que o app volta a ficar
+        // visível, para não depender só do ciclo padrão de update do navegador.
+        document.addEventListener("visibilitychange", () => {
+          if (document.visibilityState === "visible") {
+            registration.update();
+          }
+        });
       })
       .catch((err) => {
         console.log("ServiceWorker registration failed: ", err);
